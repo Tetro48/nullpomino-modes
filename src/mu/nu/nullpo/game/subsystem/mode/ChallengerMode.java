@@ -468,6 +468,8 @@ public class ChallengerMode extends DummyMode {
 	private int gradeincreaseamount;
 	private int tspintime;
 	private int modetype;
+	private boolean furth;
+	private int speed_level;
 
 	/*
 	 * Mode name
@@ -493,6 +495,7 @@ public class ChallengerMode extends DummyMode {
 		engine.ruleopt.pieceEnterAboveField = true;
 		engine.ruleopt.fieldHiddenHeight = 20;
 		engine.staffrollEnableStatistics = true;
+		furth = false;
 		tspintime = 0;
 		gradeincreasedelay = 0;
 		gradeincreaseamount = 0;
@@ -661,6 +664,7 @@ public class ChallengerMode extends DummyMode {
 		if(strRuleName.contains("CLASSIC")) defaultTorikan = DEFAULT_TORIKAN_CLASSIC;
 		torikan = prop.getProperty("challenger.torikan." + strRuleName, defaultTorikan);
 		modetype = prop.getProperty("challenger.type." + strRuleName, 0);
+		furth = prop.getProperty("challenger.furthest", false);
 	}
 
 	/**
@@ -678,6 +682,7 @@ public class ChallengerMode extends DummyMode {
 		prop.setProperty("challenger.big", big);
 		prop.setProperty("challenger.torikan." + strRuleName, torikan);
 		prop.setProperty("challenger.type." + strRuleName, modetype);
+		prop.setProperty("challenger.furthest", furth);
 	}
 
 	/**
@@ -695,14 +700,15 @@ public class ChallengerMode extends DummyMode {
 	 * @param engine GameEngine
 	 */
 	private void setSpeed(GameEngine engine) {
+		if(!furth)speed_level = engine.statistics.level;
+		else speed_level = 2100;
 		if((always20g == true) || (engine.statistics.time >= 36000)) {
 			engine.speed.gravity = -1;
 		} else {
-			while(engine.statistics.level >= tableGravityChangeLevel[gravityindex]) gravityindex++;
+			while(speed_level >= tableGravityChangeLevel[gravityindex]) gravityindex++;
 			engine.speed.gravity = tableGravityValue[gravityindex];
 		}
-
-		int section = engine.statistics.level / 100;
+		int section = speed_level / 100;
 		if(section > tableARE.length - 1) section = tableARE.length - 1;
 		if(always20g) engine.speed.das = tableDAS[section+4];
 		else if (engine.statistics.time >= 36000) engine.speed.das = 0;
@@ -941,7 +947,7 @@ public class ChallengerMode extends DummyMode {
 		else owner.backgroundStatus.bg = startlevel;
 		if(engine.owner.replayMode == false) {
 			// Configuration changes
-			int change = updateCursor(engine, 9);
+			int change = updateCursor(engine, 10);
 
 			if(change != 0) {
 				engine.playSE("change");
@@ -989,6 +995,9 @@ public class ChallengerMode extends DummyMode {
 					if(modetype < 0) modetype = 3;
 					if(modetype >= 2) enableexam = true;
 					else enableexam = false;
+					break;
+				case 10:
+					furth = !furth;
 					break;
 				}
 			}
@@ -1132,7 +1141,8 @@ public class ChallengerMode extends DummyMode {
 		else if (always20g && engine.statistics.level >= 2000) engine.ruleopt.nextDisplay = 0;
 		if ((engine.statistics.level / 100) > 19 && always20g) { engine.ruleopt.holdEnable = false;}
 		
-		owner.bgmStatus.bgm = bgmlv;
+		if(!furth)owner.bgmStatus.bgm = bgmlv;
+		else owner.bgmStatus.bgm = BGMStatus.BGM_SPECIAL4;
 
 	}
 
@@ -1141,10 +1151,12 @@ public class ChallengerMode extends DummyMode {
 	 */
 	@Override
 	public void renderLast(GameEngine engine, int playerID) {
+		if (furth)
+		receiver.drawScoreFont(engine, playerID, 0, -1, "FURTHEST", EventReceiver.COLOR_RED);
 		receiver.drawScoreFont(engine, playerID, 0, 0, "CHALLENGER", EventReceiver.COLOR_RED);
 
 		if( (engine.stat == GameEngine.STAT_SETTING) || ((engine.stat == GameEngine.STAT_RESULT) && (owner.replayMode == false)) ) {
-			if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null) && dtetlives == 1) {
+			if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null) && dtetlives == 1 && !furth) {
 				if(!isShowBestSectionTime) {
 					// Rankings
 					float scale = (receiver.getNextDisplayType() == 2) ? 0.5f : 1.0f;
@@ -1326,7 +1338,9 @@ public class ChallengerMode extends DummyMode {
 			// Section Time
 			if((showsectiontime == true) && (sectiontime != null)) {
 				int x = (receiver.getNextDisplayType() == 2) ? 8 : 12;
-				receiver.drawScoreFont(engine, playerID, x, 2, "SECTION TIME", EventReceiver.COLOR_BLUE);
+				int y = (receiver.getNextDisplayType() == 2) ? 4 : 2;
+				float scale = (receiver.getNextDisplayType() == 2) ? 0.5f : 1.0f;
+				receiver.drawScoreFont(engine, playerID, x, 2, "SECTION TIME", EventReceiver.COLOR_BLUE, scale);
 
 				for(int i = 0; i < sectiontime.length; i++) {
 					if(sectiontime[i] > 0) {
@@ -1334,6 +1348,7 @@ public class ChallengerMode extends DummyMode {
 						if(temp > 2100) temp = 2100;
 
 						int section = engine.statistics.level / 100;
+						if(engine.statistics.level == 2100) section = 20;
 						String strSeparator = " ";
 						int color = EventReceiver.COLOR_WHITE;
 						if((i == section) && (engine.ending == 0)) {
@@ -1345,16 +1360,18 @@ public class ChallengerMode extends DummyMode {
 							else if (coolsection[i]) color = EventReceiver.COLOR_GREEN;
 						}
 
+						int pos = i - Math.max(section-14,0);
+
+
 						String strSectionTime;
 						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectiontime[i]));
-
-						receiver.drawScoreFont(engine, playerID, x, 3 + i, strSectionTime, color);
+						if (pos >= 0) receiver.drawScoreFont(engine, playerID, x, 3 + pos, strSectionTime, color, scale);
 					}
 				}
 
 				if(sectionavgtime > 0) {
-					receiver.drawScoreFont(engine, playerID, -15, 22, "AVERAGE STIME", EventReceiver.COLOR_BLUE);
-					receiver.drawScoreFont(engine, playerID, -15, 23, GeneralUtil.getTime(sectionavgtime));
+					receiver.drawScoreFont(engine, playerID, 12, 19, "AVERAGE", EventReceiver.COLOR_BLUE);
+					receiver.drawScoreFont(engine, playerID, 12, 20, GeneralUtil.getTime(sectionavgtime));
 				}
 			}
 		}
@@ -1432,7 +1449,7 @@ public class ChallengerMode extends DummyMode {
 			}
 		}
 
-		if(always20g && engine.statistics.level > 1899)
+		if((always20g && engine.statistics.level > 1899) || furth)
 		{
 			owner.bgmStatus.bgm = BGMStatus.BGM_SPECIAL4;
 		}
@@ -1583,6 +1600,7 @@ public class ChallengerMode extends DummyMode {
 			int levelbonus = 1 + (engine.statistics.level / 250);
 	
 			float point = (basepoint * combobonus) * levelbonus;
+			if(furth) point *= 50;
 			if(always20g && engine.statistics.level == 2100) point *= 10 + (rolltime / 300);
 			else if(always20g && engine.statistics.level > 1999) point *= 5;
 			else if(always20g && engine.statistics.level > 1899) point *= 2;
@@ -1852,17 +1870,19 @@ public class ChallengerMode extends DummyMode {
 		if(cooldispframe > 0) cooldispframe--;
 
 		// 15分経過
-		if(engine.statistics.time >= 54000) {
+		if(engine.statistics.time >= 36000) {
 			setSpeed(engine);
 		}
 		if (engine.statistics.level == 2100 && rolltime < ROLLTIMELIMIT && engine.ending == 2 && !challengerGameOver) engine.statistics.time++;
 		
 		if (gradeincreaseamount > 0 && gradeincreasedelay == 0)
 		{
-			if (grade < 87 && (modetype == 1 || modetype == 3)) grade++;
-			if (grade < 20 && (modetype == 0 || modetype == 2)) grade++;
-			if (always20g && (modetype == 0 || modetype == 2) && grade == 19) grade++;
-			if (always20g && (modetype == 1 || modetype == 3) && grade == 87) grade++;
+			if ((grade < 87 || rollclear > 1) && (modetype == 1 || modetype == 3)) grade++;
+			if ((grade < 18 || rollclear > 1) && (modetype == 0 || modetype == 2)) grade++;
+			if ((modetype == 0 || modetype == 2) && grade == 19 && rollclear < 1) gradeincreaseamount = 0;
+			if ((modetype == 1 || modetype == 3) && grade == 87 && rollclear < 1) gradeincreaseamount = 0;
+			if (always20g && (modetype == 0 || modetype == 2) && grade == 19 && rollclear > 1) grade++;
+			if (always20g && (modetype == 1 || modetype == 3) && grade == 87 && rollclear > 1) grade++;
 			gradeincreaseamount--;
 			if(modetype == 1 || modetype == 3) gradeincreasedelay = 5;
 			else gradeincreasedelay = 20;
@@ -2104,6 +2124,7 @@ public class ChallengerMode extends DummyMode {
 		else owner.replayProp.setProperty("result.grade.name", tableGradeName[grade]);
 		owner.replayProp.setProperty("result.grade.number", grade);
 		owner.replayProp.setProperty("challenger.version", version);
+		owner.replayProp.setProperty("challenger.furthest", furth);
 		owner.replayProp.setProperty("challenger.exam", (promotionFlag ? promotionalExam : 0));
 		owner.replayProp.setProperty("challenger.demopoint", demotionPoints);
 		owner.replayProp.setProperty("challenger.demotionExamGrade", demotionExamGrade);
@@ -2206,7 +2227,7 @@ public class ChallengerMode extends DummyMode {
 	private void saveRanking(CustomProperties prop, String ruleName) {
 		for(int i = 0; i < RANKING_MAX; i++) {
 			for(int j = 0; j < RANKING_TYPE; j++) {
-				if(always20g) {
+				if(always20g && !furth) {
 					if(j == 0) {
 						if (modetype == 1)
 						{
@@ -2241,7 +2262,7 @@ public class ChallengerMode extends DummyMode {
 						}
 					}
 				}
-				else {
+				else if (!furth) {
 					if(j == 0) {
 						if (modetype == 1)
 						{
@@ -2277,6 +2298,8 @@ public class ChallengerMode extends DummyMode {
 				}
 			}
 		}
+		if (!furth)
+		{
 			for(int i = 0; i < SECTION_MAX; i++) {
 				for(int j = 0; j < RANKING_TYPE; j++) {
 					prop.setProperty("challenger.bestSectionTime." + j + "." + ruleName + "." + i, bestSectionTime[i][j]);
@@ -2288,6 +2311,7 @@ public class ChallengerMode extends DummyMode {
 			}
 			prop.setProperty("challenger.qualified." + ruleName, qualifiedGrade);
 			prop.setProperty("challenger.demopoint." + ruleName, demotionPoints);
+		}
 	}
 
 	/**

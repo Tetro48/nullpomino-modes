@@ -44,7 +44,7 @@ import mu.nu.nullpo.util.GeneralUtil;
  */
 public class ChallengerMode extends DummyMode {
 	/** Current version */
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	
 	/** Default torikan time for non-classic rules */
 	private static final int DEFAULT_TORIKAN = 13920;
@@ -67,6 +67,12 @@ public class ChallengerMode extends DummyMode {
 	private static final int[] tableGravityValue =
 	{
 		4, 16, 64, 256, 1024,-1
+	};
+
+	/** 落下速度 table */
+	private static final int[] newTableGravityValue =
+	{
+		5, 20, 80, 320, 1280,-1
 	};
 
 	/** 落下速度が変わる level */
@@ -119,20 +125,20 @@ public class ChallengerMode extends DummyMode {
 	/** 実際の段位を上げるのに必要な内部段位 */
 	private static final int[] tableGradeChange =
 	{
-		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, -1
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, -1
 	};
 	/** 実際の段位を上げるのに必要な内部段位 */
 	private static final int[] tableGradeChangeClassic =
 	{
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 
 		40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76,
-		77, 78, 79, 80, 81, 82, 83, 84, 85, 86, -1
+		77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, -1
 	};
 
 	/** 段位 pointが1つ減る time */
 	private static final int[] tableGradeDecayRate =
 	{
-		125, 80, 80, 50, 45, 45, 45, 40, 40, 40, 40, 40, 30, 30, 30, 20, 20, 20, 20, 20, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+		125, 80, 80, 50, 45, 45, 45, 40, 40, 40, 40, 40, 30, 30, 30, 20, 20, 20, 20, 20, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 	};
 
 	/** 段位のName */
@@ -140,21 +146,22 @@ public class ChallengerMode extends DummyMode {
 	{
 		 "9",  "8",  "7",  "6",  "5",  "4",  "3",  "2",  "1",	//  0～ 8
 		"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9",	//  9～17
-		 "GM", "FPGM", "0N 0H FPGM"												// 18～19
+		 "GM", "FPGM", "0N 0H FPGM", "FURTH FPGM", "FR0N0HFPGM"	// 18～22
 	};
 	
 	private static final String[] tableGradeNameClassic =
 	{
 		"9",  "8",  "7",  "6",  "5",  "4",  "3",  "2",  "1",	//  0～ 8
 		"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9",	//  9～17
-		"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9",	//  18～26
-		"MK1","MK2","MK3","MK4","MK5","MK6","MK7","MK8","MK9",	//  27～35
-		"MJ1","MJ2","MJ3","MJ4","MJ5","MJ6","MJ7","MJ8","MJ9",	//  36～44
-		"MV1","MV2","MV3","MV4","MV5","MV6","MV7","MV8","MV9",	//  45～53
-		"MO1","MO2","MO3","MO4","MO5","MO6","MO7","MO8","MO9",	//  54～62
-		"MM1","MM2","MM3","MM4","MM5","MM6","MM7","MM8","MM9",	//  63～71
-		"GM","GM1","GM2","GM3","GM4","GM5","GM6","GM7","GM8",	//  72～80
-		"GM9","GMK","GMJ","GMV","GMO","GMM", "FPGM", "0N 0H FPGM" //  80～88
+		"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M",	//  18～27
+		"MK", "MK1","MK2","MK3","MK4","MK5","MK6","MK7","MK8","MK9",	//  28～37
+		"MJ", "MJ1","MJ2","MJ3","MJ4","MJ5","MJ6","MJ7","MJ8","MJ9",	//  38～47
+		"MV", "MV1","MV2","MV3","MV4","MV5","MV6","MV7","MV8","MV9",	//  48～57
+		"MO", "MO1","MO2","MO3","MO4","MO5","MO6","MO7","MO8","MO9",	//  58～67
+		"MM", "MM1","MM2","MM3","MM4","MM5","MM6","MM7","MM8","MM9",	//  68～77
+		"GM","GM1","GM2","GM3","GM4","GM5","GM6","GM7","GM8",	//  78～86
+		"GM9","GMK","GMJ","GMV","GMO","GMM", "FPGM", "0N 0H FPGM", //  87～94
+		"FURTH FPGM", "FR0N0HFPGM"								//	95-96
 	};
 
 	/** 裏段位のName */
@@ -179,6 +186,9 @@ public class ChallengerMode extends DummyMode {
 
 	/** ж®µдЅЌе±Ґж­ґгЃ®г‚µг‚¤г‚є */
 	private static final int GRADE_HISTORY_SIZE = 7;
+
+	/** ж®µдЅЌе±Ґж­ґгЃ®г‚µг‚¤г‚є */
+	private static final int CLASSIC_GRADE_HISTORY_SIZE = 7;
 
 	/** ж®µдЅЌиЄЌе®љи©¦йЁ“гЃ®з™єз”џзўєзЋ‡(EXAM_CHANCEе€†гЃ®1гЃ®зўєзЋ‡гЃ§з™єз”џ) */
 	private static final int EXAM_CHANCE = 3;
@@ -211,7 +221,9 @@ public class ChallengerMode extends DummyMode {
 	private int gradeInternal;
 
 	/** 段位 point */
-	private int gradePoint;
+	private long gradePoint;
+	
+	private long statGradePoints;
 
 	/** 段位 pointが1つ減る time */
 	private int gradeDecay;
@@ -428,6 +440,9 @@ public class ChallengerMode extends DummyMode {
 	/** ж®µдЅЌе±Ґж­ґ (ж�‡ж јгѓ»й™Ќж ји©¦йЁ“з”Ё) */
 	private int[] gradeHistory;
 
+	/** ж®µдЅЌе±Ґж­ґ (ж�‡ж јгѓ»й™Ќж ји©¦йЁ“з”Ё) */
+	private int[] classicGradeHistory;
+
 	/** ж�‡ж ји©¦йЁ“гЃ®з›®жЁ™ж®µдЅЌ */
 	private int promotionalExam;
 	
@@ -441,14 +456,26 @@ public class ChallengerMode extends DummyMode {
 	/** й™Ќж ји©¦йЁ“ point (30д»ҐдёЉжєњгЃѕг‚‹гЃЁй™Ќж ји©¦йЁ“з™єз”џ) */
 	private int demotionPoints;
 
+	/** й™Ќж ји©¦йЁ“ point (30д»ҐдёЉжєњгЃѕг‚‹гЃЁй™Ќж ји©¦йЁ“з™єз”џ) */
+	private int classicDemotionPoints;
+
 	/** ж�‡ж ји©¦йЁ“ flag */
 	private boolean promotionFlag;
+
+	/** ж�‡ж ји©¦йЁ“ flag */
+	private boolean classicPromotionFlag;
 
 	/** й™Ќж ји©¦йЁ“ flag */
 	private boolean demotionFlag;
 
 	/** й™Ќж ји©¦йЁ“гЃ§гЃ®з›®жЁ™ж®µдЅЌ */
 	private int demotionExamGrade;
+
+	/** й™Ќж ји©¦йЁ“ flag */
+	private boolean classicDemotionFlag;
+
+	/** й™Ќж ји©¦йЁ“гЃ§гЃ®з›®жЁ™ж®µдЅЌ */
+	private int classicDemotionExamGrade;
 
 	/** и©¦йЁ“й–‹е§‹е‰Ќжј”е‡єгЃ® frame count */
 	private int readyframe;
@@ -470,6 +497,9 @@ public class ChallengerMode extends DummyMode {
 	private int modetype;
 	private boolean furth;
 	private int speed_level;
+	private int login0arrwarningtime;
+	private boolean AIused;
+	private boolean lvlroll;
 
 	/*
 	 * Mode name
@@ -494,8 +524,15 @@ public class ChallengerMode extends DummyMode {
 		engine.ruleopt.lockresetRotate = true;
 		engine.ruleopt.pieceEnterAboveField = true;
 		engine.ruleopt.fieldHiddenHeight = 20;
+		engine.ruleopt.lockresetLimitMove = 15;
+		engine.ruleopt.lockresetLimitRotate = 9;
 		engine.staffrollEnableStatistics = true;
+		if (engine.ai != null && owner.replayMode == false) AIused = true;
+		else if (owner.replayMode == false) AIused = false;
+		lvlroll = false;
+		statGradePoints = 0;
 		furth = false;
+		login0arrwarningtime = 300;
 		tspintime = 0;
 		gradeincreasedelay = 0;
 		gradeincreaseamount = 0;
@@ -557,7 +594,6 @@ public class ChallengerMode extends DummyMode {
 		lvstopse = false;
 		big = false;
 		enableexam = false;
-
 		promotionalExam = 0;
 		classicPromotionalExam = 0;
 		qualifiedGrade = 0;
@@ -566,11 +602,15 @@ public class ChallengerMode extends DummyMode {
 		readyframe = 0;
 		passframe = 0;
 		gradeHistory = new int[GRADE_HISTORY_SIZE];
+		classicGradeHistory = new int[CLASSIC_GRADE_HISTORY_SIZE];
 		promotionFlag = false;
+		classicPromotionFlag = false;
 		demotionFlag = false;
 		demotionExamGrade = 0;
+		classicDemotionFlag = false;
+		classicDemotionExamGrade = 0;
 
-		if(modetype >= 2) enableexam = true;
+		if(modetype >= 2 && modetype < 4) enableexam = true;
 		rankingRank = -1;
 		rankingGrade = new int[RANKING_MAX][RANKING_TYPE];
 		rankingLevel = new int[RANKING_MAX][RANKING_TYPE];
@@ -612,24 +652,23 @@ public class ChallengerMode extends DummyMode {
 			}
 			loadSetting(owner.replayProp, engine.ruleopt.strRuleName);
 			version = owner.replayProp.getProperty("challenger.version", 0);
+			AIused = owner.replayProp.getProperty("challenger.aitype", false);
 			if(enableexam) {
 				promotionalExam = owner.replayProp.getProperty("challenger.exam", 0);
 				demotionPoints = owner.replayProp.getProperty("challenger.demopoint", 0);
 				demotionExamGrade = owner.replayProp.getProperty("challenger.demotionExamGrade", 0);
-				if (modetype == 3)
-				{
+				classicPromotionalExam = owner.replayProp.getProperty("challenger.classicexam", 0);
+				classicDemotionPoints = owner.replayProp.getProperty("challenger.classicdemopoint", 0);
+				classicDemotionExamGrade = owner.replayProp.getProperty("challenger.classicdemotionExamGrade", 0);
 					if (classicPromotionalExam > 0) {
-						promotionFlag = true;
+						classicPromotionFlag = true;
 						readyframe = 100;
 						passframe = 600;
 					}
 					else if (demotionPoints >= 30) {
-						demotionFlag = true;
+						classicDemotionFlag = true;
 						passframe = 600;
 					}
-				}
-				else
-				{
 					if (promotionalExam > 0) {
 						promotionFlag = true;
 						readyframe = 100;
@@ -639,12 +678,13 @@ public class ChallengerMode extends DummyMode {
 						demotionFlag = true;
 						passframe = 600;
 					}
-				}
 
 			}
 		}
+		if (engine.getDASDelay() == 0 || (engine.ai != null || AIused)) { engine.playSE("danger");engine.playSE("danger");engine.playSE("danger"); engine.playSE("garbage");}
 
-		owner.backgroundStatus.bg = startlevel;
+		if(startlevel > 19) owner.backgroundStatus.bg = 19;
+		else owner.backgroundStatus.bg = startlevel;
 	}
 
 	/**
@@ -701,12 +741,13 @@ public class ChallengerMode extends DummyMode {
 	 */
 	private void setSpeed(GameEngine engine) {
 		if(!furth)speed_level = engine.statistics.level;
+		else if (engine.statistics.level < 1100 && version > 2) speed_level = engine.statistics.level + 1000;
 		else speed_level = 2100;
 		if((always20g == true) || (engine.statistics.time >= 36000)) {
 			engine.speed.gravity = -1;
 		} else {
 			while(speed_level >= tableGravityChangeLevel[gravityindex]) gravityindex++;
-			engine.speed.gravity = tableGravityValue[gravityindex];
+			engine.speed.gravity = (version < 3) ? tableGravityValue[gravityindex] : newTableGravityValue[gravityindex]; 
 		}
 		int section = speed_level / 100;
 		if(section > tableARE.length - 1) section = tableARE.length - 1;
@@ -866,7 +907,8 @@ public class ChallengerMode extends DummyMode {
 	 * @return дЅ•г‚‰гЃ‹гЃ®и©¦йЁ“дё­гЃЄг‚‰true
 	 */
 	private boolean isAnyExam() {
-		return promotionFlag || demotionFlag;
+		if(modetype == 3) return classicPromotionFlag || classicDemotionFlag;
+		else return promotionFlag || demotionFlag;
 	}
 
 	/**
@@ -943,7 +985,7 @@ public class ChallengerMode extends DummyMode {
 		// Menu
 		if(startlevel >= 6 && !always20g) engine.bone = true;
 		else if(startlevel >= 2 & always20g) engine.bone = true;
-		if(startlevel == 20) owner.backgroundStatus.bg = 19;
+		if(startlevel > 19) owner.backgroundStatus.bg = 19;
 		else owner.backgroundStatus.bg = startlevel;
 		if(engine.owner.replayMode == false) {
 			// Configuration changes
@@ -955,14 +997,18 @@ public class ChallengerMode extends DummyMode {
 				switch(engine.statc[2]) {
 				case 0:
 					startlevel += change;
-					if(startlevel < 0) startlevel = 20;
-					if(startlevel > 20) startlevel = 0;
+					if(modetype < 4 &&startlevel < 0 ) startlevel = 21;
+					if(modetype < 4 &&startlevel > 21) startlevel = 0;
+					if(modetype == 4 && startlevel < 0) startlevel = 5;
+					if(modetype == 4 && startlevel > 5) startlevel = 0;
+					if(startlevel < 6) engine.bone = false;
 					break;
 				case 1:
 					alwaysghost = !alwaysghost;
 					break;
 				case 2:
 					always20g = !always20g;
+					if(modetype == 4) always20g = false;
 					break;
 				case 3:
 					lvstopse = !lvstopse;
@@ -991,13 +1037,16 @@ public class ChallengerMode extends DummyMode {
 					break;
 				case 9:
 					modetype += change;
-					if(modetype > 3) modetype = 0;
-					if(modetype < 0) modetype = 3;
-					if(modetype >= 2) enableexam = true;
+					if(modetype > 4) modetype = 0;
+					if(modetype < 0) modetype = 4;
+					if(modetype == 4 && startlevel > 5) startlevel = 5;
+					if(modetype == 4) {always20g = false; furth = false; engine.bone = false;}
+					if(modetype >= 2 && modetype < 4) enableexam = true;
 					else enableexam = false;
 					break;
 				case 10:
 					furth = !furth;
+					if(modetype == 4) furth = false;
 					break;
 				}
 			}
@@ -1021,15 +1070,30 @@ public class ChallengerMode extends DummyMode {
 				Random rand = new Random();
 				if(!big && enableexam && (rand.nextInt(EXAM_CHANCE) == 0)) {
 					setPromotionalGrade();
-					if(promotionalExam > qualifiedGrade) {
-						promotionFlag = true;
-						readyframe = 100;
-						passframe = 600;
-					} else if(demotionPoints >= 30) {
-						demotionFlag = true;
-						demotionExamGrade = qualifiedGrade;
-						passframe = 600;
-						demotionPoints = 0;
+					if(modetype == 3)
+					{
+						if(classicPromotionalExam > qualifiedClassicGrade) {
+							classicPromotionFlag = true;
+							readyframe = 100;
+							passframe = 600;
+						} else if(classicDemotionPoints >= 30) {
+							classicDemotionFlag = true;
+							classicDemotionExamGrade = qualifiedClassicGrade;
+							passframe = 600;
+							classicDemotionPoints = 0;
+						}
+					}
+					else {
+						if(promotionalExam > qualifiedGrade) {
+							promotionFlag = true;
+							readyframe = 100;
+							passframe = 600;
+						} else if(demotionPoints >= 30) {
+							demotionFlag = true;
+							demotionExamGrade = qualifiedGrade;
+							passframe = 600;
+							demotionPoints = 0;
+						}
 					}
 				}
 
@@ -1060,7 +1124,7 @@ public class ChallengerMode extends DummyMode {
 	 */
 	@Override
 	public boolean onReady(GameEngine engine, int playerID) {
-		if(promotionFlag) {
+		if(promotionFlag || classicPromotionFlag) {
 			engine.framecolor = GameEngine.FRAME_COLOR_YELLOW;
 
 			if(readyframe == 100) engine.playSE("tspin3");
@@ -1072,7 +1136,7 @@ public class ChallengerMode extends DummyMode {
 				readyframe--;
 				return true;
 			}
-		} else if(demotionFlag) {
+		} else if(demotionFlag || classicDemotionFlag) {
 			engine.framecolor = GameEngine.FRAME_COLOR_GRAY;
 			engine.playSE("danger");
 		}
@@ -1085,10 +1149,16 @@ public class ChallengerMode extends DummyMode {
 	 */
 	@Override
 	public void renderReady(GameEngine engine, int playerID) {
-		if(promotionFlag && readyframe > 0) {
+		if((promotionFlag || classicPromotionFlag) && readyframe > 0) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "PROMOTION", EventReceiver.COLOR_YELLOW);
 			receiver.drawMenuFont(engine, playerID, 6, 3, "EXAM", EventReceiver.COLOR_YELLOW);
-			receiver.drawMenuFont(engine, playerID, 4, 6, getGradeName(promotionalExam), (readyframe % 4 ==0),
+			int x = (5 - getGradeName(promotionalExam).length() / 2);
+			if(modetype == 3) {
+				x = (5 - getGradeName(classicPromotionalExam).length() / 2);
+			}
+			if(modetype == 3) receiver.drawMenuFont(engine, playerID, x, 6, getGradeName(classicPromotionalExam), (readyframe % 4 ==0),
+				EventReceiver.COLOR_WHITE, EventReceiver.COLOR_ORANGE);
+			else receiver.drawMenuFont(engine, playerID, x, 6, getGradeName(promotionalExam), (readyframe % 4 ==0),
 				EventReceiver.COLOR_WHITE, EventReceiver.COLOR_ORANGE);
 		}
 	}
@@ -1099,16 +1169,67 @@ public class ChallengerMode extends DummyMode {
 	@Override
 	public void renderSetting(GameEngine engine, int playerID) {
 		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR_RED, 0,
-				"LEVEL", String.valueOf(startlevel * 100),
+				"LEVEL", (startlevel == 21 && modetype < 4) ? "ROLL" : (startlevel == 5 && modetype == 4) ? "ROLL": String.valueOf(startlevel * 100),
 				"FULL GHOST", GeneralUtil.getONorOFF(alwaysghost),
-				"20G MODE", GeneralUtil.getONorOFF(always20g),
+				"20G MODE", (modetype == 4) ? "NO ACCESS" : GeneralUtil.getONorOFF(always20g),
 				"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse),
 				"NEXT PIECE", String.valueOf(confignpieces),
 				"SHOW STIME", GeneralUtil.getONorOFF(showsectiontime),
 				"BIG",  GeneralUtil.getONorOFF(big),
 				"LIVES", String.valueOf(dtetlives),
 				"TORIKAN", (torikan == 0) ? "NONE" : GeneralUtil.getTime(torikan),
-				"MODE TYPE", (modetype == 0) ? "STANDARD" : (modetype == 1) ? "CLASSIC" : (modetype == 2) ? "EXAM" : "EXAM CL");
+				"MODE TYPE", (modetype == 0) ? "STANDARD" : (modetype == 1) ? "CLASSIC" : (modetype == 2) ? "EXAM" : (modetype == 3) ? "EXAM CL" : "EASY");
+		if(engine.stat == GameEngine.STAT_SETTING)
+		{
+			int xfont = (receiver.getNextDisplayType() == 2) ? 8 : 0;
+			int yintr = 42;
+			if (((engine.getDASDelay() > 0 && (engine.ai == null || !AIused)) || login0arrwarningtime == 0) && isShowBestSectionTime == false && owner.replayMode == false)receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr - 1, "DESCRIPTION:", 0.5f);
+			if (engine.getDASDelay() == 0 && login0arrwarningtime > 0) { receiver.drawScoreFont(engine, playerID, -15 - xfont / 2, yintr / 2, "WARNING! 0 DAS DELAY OR ARR MAY CAUSE", EventReceiver.COLOR_RED);  receiver.drawScoreFont(engine, playerID, -15 - xfont / 2, yintr / 2 + 1, "MAJOR INCONVENIENCES LATER ON!", EventReceiver.COLOR_RED);}
+			if ((engine.ai != null || AIused) && login0arrwarningtime > 0) { receiver.drawScoreFont(engine, playerID, -15 - xfont / 2, yintr / 2, "WARNING! BOT USAGE DETECTED!", EventReceiver.COLOR_RED);}
+			else if (!isShowBestSectionTime) switch(engine.statc[2]) {
+			case 0:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "THE STARTING LEVEL. SETTING IT TO ANYTHING OTHER THAN 0 WILL INVALIDATE", 0.5f);
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr + 1, "YOUR PLAY FROM THE RANKINGS. (MATTMAYUGA'S REWORD)", 0.5f);
+				break;
+			case 1:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "GHOST PIECE SETTING. WHEN IT'S ON, GHOST PIECE WILL STAY, EVEN ON 20G.", 0.5f);
+				break;
+			case 2:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "20G MODE. EQUVALENT TO INCREASING SPEED LEVEL BY 400. IT HAS OWN SEPARATE", 0.5f);
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr + 1, "LEADERBOARD.", 0.5f);
+				break;
+			case 3:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "LEVEL STOP SOUND EFFECT WILL PLAY AT **99 LEVEL WHEN IT'S ENABLED.", 0.5f);
+				break;
+			case 4:
+				if (confignpieces > 8)	receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "WHAT'S WRONG WITH YOU!? HOW MUCH NEXT PIECES YOU SET!? " + confignpieces + " NEXT PIECES!?", 0.5f);
+				else receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "NEXT PIECES SHOWN. HIGH LEVEL 20G NEXT PIECE CHANGING FEATURE IS ENFORCED.", 0.5f);
+				break;
+			case 5:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "SECTION TIME SETTING. IT WILL SHOW 15 OUT OF 21 SECTIONS. SHOWING ALL 21", 0.5f);
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr + 1, "SECTIONS IS A BIT DISTURBING.", 0.5f);
+				break;
+			case 6:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "BIG PIECES SETTING. IT'S SELF EXPLANATORY ONCE YOU PLAY WITH BIG PIECES ON.", 0.5f);
+				break;
+			case 7:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "AMOUNT OF LIVES. SETTING MORE THAN 1 LIFE WILL DISABLE LEADERBOARD.", 0.5f);
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr + 1, "TOPPING OUT WITH 1 LIFE COUNTS AS GAME OVER.", 0.5f);
+				break;
+			case 8:
+				int defaultTorikan = DEFAULT_TORIKAN;
+				if(engine.ruleopt.strRuleName.contains("CLASSIC")) defaultTorikan = DEFAULT_TORIKAN_CLASSIC;
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "TORIKAN OR LEVEL 500 LIMIT. DEFAULT TORIKAN TIME IS " + GeneralUtil.getTime(defaultTorikan)+ ".", 0.5f);
+				break;
+			case 9:
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "MODE TYPE. STANDARD IS DEFAULT. FIND OUT WHAT OTHER TYPES DO.", 0.5f);
+				break;
+			case 10:
+				if (furth) receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "YOU FOUND A DIFFICULTY EASTER EGG! ALSO KNOWN AS FURTHEST.", 0.5f);
+				else receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "WHERE'S YOUR CURSOR?", 0.5f);
+				break;
+			}
+		}
 	}
 
 	/*
@@ -1116,17 +1237,21 @@ public class ChallengerMode extends DummyMode {
 	 */
 	@Override
 	public void startGame(GameEngine engine, int playerID) {
-		engine.statistics.level = startlevel * 100;
+		engine.statistics.level = (startlevel == 21) ? 2100 : (startlevel * 100);
 		engine.lives = dtetlives - 1;
 		engine.ruleopt.nextDisplay = confignpieces;
-		if(modetype >= 2) enableexam = true;
+		if(modetype >= 2 && modetype < 4) enableexam = true;
+		login0arrwarningtime = 0;
+		//if (startlevel == 21) calcScore(engine, playerID, 4);
+		if(startlevel == 21 && modetype < 4) mrollFlag = true;
 
 		if(engine.statistics.level >= 600 && !always20g) engine.bone = true;
 		else if (engine.statistics.level >= 200 && always20g) engine.bone = true;
 		else engine.bone = false;
 		nextseclv = engine.statistics.level + 100;
 		if(engine.statistics.level < 0) nextseclv = 100;
-		if(engine.statistics.level >= 2000) nextseclv = 2100;
+		if(engine.statistics.level >= 2000 && modetype < 4) nextseclv = 2100;
+		if(engine.statistics.level >= 400 && modetype == 4) nextseclv = 500;
 
 		if(engine.statistics.level < 1900) owner.backgroundStatus.bg = engine.statistics.level / 100;
 		else owner.backgroundStatus.bg = 19;
@@ -1154,9 +1279,12 @@ public class ChallengerMode extends DummyMode {
 		if (furth)
 		receiver.drawScoreFont(engine, playerID, 0, -1, "FURTHEST", EventReceiver.COLOR_RED);
 		receiver.drawScoreFont(engine, playerID, 0, 0, "CHALLENGER", EventReceiver.COLOR_RED);
+		receiver.drawScoreFont(engine, playerID, 11, 0, "V .", EventReceiver.COLOR_RED);
+		receiver.drawScoreFont(engine, playerID, 12, 0, String.valueOf((version % 100) / 10), EventReceiver.COLOR_RED);
+		receiver.drawScoreFont(engine, playerID, 14, 0, String.valueOf(version % 10), EventReceiver.COLOR_RED);
 
 		if( (engine.stat == GameEngine.STAT_SETTING) || ((engine.stat == GameEngine.STAT_RESULT) && (owner.replayMode == false)) ) {
-			if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null) && dtetlives == 1 && !furth) {
+			if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null) && dtetlives == 1 && !furth && modetype < 4 && (login0arrwarningtime == 0 || engine.getDASDelay() > 0)) {
 				if(!isShowBestSectionTime) {
 					// Rankings
 					float scale = (receiver.getNextDisplayType() == 2) ? 0.5f : 1.0f;
@@ -1242,8 +1370,13 @@ public class ChallengerMode extends DummyMode {
 			int rgrade = grade;
 			if(modetype == 3)
 			{
-				if(enableexam && (rgrade >= 72) && (qualifiedClassicGrade < 72)) rgrade = 71;
-				if(enableexam && (rgrade > qualifiedClassicGrade + 1) && (qualifiedClassicGrade >= 72)) rgrade = qualifiedClassicGrade + 1;
+				if(enableexam && (rgrade >= 78) && (qualifiedClassicGrade < 72)) rgrade = 77;
+				if(enableexam && (rgrade > qualifiedClassicGrade + 1) && (qualifiedClassicGrade >= 78)) rgrade = qualifiedClassicGrade + 1;
+			}
+			if(promotionFlag || classicPromotionFlag) {
+				// и©¦йЁ“ж®µдЅЌ
+				receiver.drawMenuFont(engine, playerID, 0, 21, "QUALIFY", EventReceiver.COLOR_YELLOW);
+				receiver.drawMenuFont(engine, playerID, 0, 22, getGradeName(classicPromotionFlag ? classicPromotionalExam : promotionalExam));
 			}
 			else
 			{
@@ -1277,7 +1410,7 @@ public class ChallengerMode extends DummyMode {
 				if(tempLevel < 0) tempLevel = 0;
 				String strLevel = String.format("%3d", tempLevel);
 				receiver.drawScoreFont(engine, playerID, 0, 10, strLevel);
-				int speed = engine.speed.gravity / 256;
+				int speed = engine.speed.gravity / 128;
 				if(engine.speed.gravity < 0) speed = 40;
 				receiver.drawSpeedMeter(engine, playerID, 0, 11, speed);
 
@@ -1300,31 +1433,32 @@ public class ChallengerMode extends DummyMode {
 			}
 
 			receiver.drawScoreFont(engine, playerID, 0, 14, "GRADE SCORE", EventReceiver.COLOR_BLUE);
-			receiver.drawScoreFont(engine, playerID, 0, 15, Integer.toString(gradePoint)+"/");
-			receiver.drawScoreFont(engine, playerID, 0, 16, Integer.toString((int)gradescorereq));
+			receiver.drawScoreFont(engine, playerID, 0, 15, Long.toString(gradePoint)+"/");
+			receiver.drawScoreFont(engine, playerID, 0, 16, Long.toString((long)gradescorereq));
 			// Time
-			if(engine.statistics.level == 2100)
-				receiver.drawScoreFont(engine, playerID, -11, 20, GeneralUtil.getTime(normaltime));
+			if((engine.statistics.level == 2100 && modetype < 4) || (engine.statistics.level == 500 && modetype == 4))
+				receiver.drawMenuFont(engine, playerID, 2, 20, GeneralUtil.getTime(normaltime));
 			else
-				receiver.drawScoreFont(engine, playerID, -11, 20, GeneralUtil.getTime(engine.statistics.time));
+				receiver.drawMenuFont(engine, playerID, 2, 20, GeneralUtil.getTime(engine.statistics.time));
 			receiver.drawScoreFont(engine, playerID, 0, 22, "PIECES/SEC", EventReceiver.COLOR_BLUE);
 			receiver.drawScoreFont(engine, playerID, 0, 23, Double.toString(Math.floor(engine.statistics.pps * 100) / 100));
 
 			// Roll 残り time
 			if((engine.gameActive) && (engine.ending == 2)) {
 				int time = ROLLTIMELIMIT - rolltime;
+				if (modetype == 4) time = (int)(ROLLTIMELIMIT / 2.03) - rolltime;
 				if(time < 0) time = 0;
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR_BLUE);
 				receiver.drawScoreFont(engine, playerID, 0, 18, GeneralUtil.getTime(time), ((time > 0) && (time < 10 * 60)));
 			}
 			if(regretdispframe > 0) {
 				// REGRETиЎЁз¤є
-				receiver.drawMenuFont(engine,playerID,2,21,"REGRET",(regretdispframe % 2 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_ORANGE);
+				receiver.drawMenuFont(engine,playerID,2,21,"REGRET",(regretdispframe / 2 % 2 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_ORANGE);
 			} else if(tspintime > 0) {
-				receiver.drawMenuFont(engine,playerID,2,21,"T-SPIN!",(tspintime % 2 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_ORANGE);
+				receiver.drawMenuFont(engine,playerID,2,21,"T-SPIN!",(tspintime / 2 % 2 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_ORANGE);
 			} else if(cooldispframe > 0) {
 				// COOLиЎЁз¤є
-				receiver.drawMenuFont(engine,playerID,2,21,"COOL!!",(cooldispframe % 2 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_ORANGE);
+				receiver.drawMenuFont(engine,playerID,2,21,"COOL!!",(cooldispframe / 2 % 2 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_ORANGE);
 			}
 
 			//  medal
@@ -1337,8 +1471,7 @@ public class ChallengerMode extends DummyMode {
 
 			// Section Time
 			if((showsectiontime == true) && (sectiontime != null)) {
-				int x = (receiver.getNextDisplayType() == 2) ? 8 : 12;
-				int y = (receiver.getNextDisplayType() == 2) ? 4 : 2;
+				int x = (receiver.getNextDisplayType() == 2) ? 22 : 12;
 				float scale = (receiver.getNextDisplayType() == 2) ? 0.5f : 1.0f;
 				receiver.drawScoreFont(engine, playerID, x, 2, "SECTION TIME", EventReceiver.COLOR_BLUE, scale);
 
@@ -1385,18 +1518,20 @@ public class ChallengerMode extends DummyMode {
 		// 新規ピース出現時
 		gradepointpps += (float) (engine.statistics.pps / (1 + ((engine.statistics.level /100)/ 4)))/60;
 		if(gradepointpps >= 1.0) {
-			gradePoint += 1;
+			gradePoint++;
+			statGradePoints++;
 			gradepointpps -= (float) 1;
 		}
+		if (((startlevel == 21 && modetype < 4) || (startlevel == 5 && modetype == 4)) && lvlroll == false) {lvlroll = true; engine.ending = 2;}
 		if(garbageDelay > 0) garbageCount = 0;
 		if((engine.statc[0] == 0) && (engine.holdDisable == false) && garbageDelay == 0) {
 			// せり上がりカウント
-			if(tableGarbage[engine.statistics.level / 100] != 0 && garbageDelay == 0) garbageCount++;
+			if((tableGarbage[speed_level / 100] != 0  && version > 2) || tableGarbage[engine.statistics.level / 100] != 0  && garbageDelay == 0) garbageCount++;
 			// せり上がり
-			if((garbageCount >= tableGarbage[engine.statistics.level / 100]) && !always20g && (tableGarbage[engine.statistics.level / 100] != 0) && garbageDelay == 0) {
+			if((((garbageCount >= tableGarbage[speed_level / 100]) && !always20g && (tableGarbage[speed_level / 100] != 0) && version > 2) || ((garbageCount >= tableGarbage[engine.statistics.level / 100]) && !always20g && (tableGarbage[engine.statistics.level / 100] != 0))) && garbageDelay == 0) {
 				sendGarbage(engine);
 			}
-			else if((garbageCount >= tableGarbage[engine.statistics.level / 100 +4]) && always20g && (tableGarbage[engine.statistics.level / 100 +4] != 0) && garbageDelay == 0) {
+			else if((((garbageCount >= tableGarbage[speed_level / 100 +4]) && always20g && (tableGarbage[speed_level / 100 +4] != 0) && version > 2) || ((garbageCount >= tableGarbage[engine.statistics.level / 100 +4]) && always20g && (tableGarbage[engine.statistics.level / 100 +4] != 0)))&& garbageDelay == 0) {
 				sendGarbage20g(engine);
 			}
 		}
@@ -1446,6 +1581,7 @@ public class ChallengerMode extends DummyMode {
 			if(gradeDecay >= tableGradeDecayRate[index]) {
 				gradeDecay = 0;
 				gradePoint--;
+				statGradePoints--;
 			}
 		}
 
@@ -1458,16 +1594,17 @@ public class ChallengerMode extends DummyMode {
 			rollstarted = true;
 
 			if(mrollFlag) {
-				engine.blockHidden = engine.ruleopt.lockflash;
+				engine.blockHidden = 0;
 				engine.blockHiddenAnim = true;
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE;
 			} else {
 				engine.blockHidden = 300;
 				engine.blockHiddenAnim = true;
-				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE;
+				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL;
 			}
 
-			if(always20g) owner.bgmStatus.bgm = BGMStatus.BGM_SPECIAL4;
+			if(always20g && modetype < 4) owner.bgmStatus.bgm = BGMStatus.BGM_SPECIAL4;
+			else if (modetype == 4) owner.bgmStatus.bgm = BGMStatus.BGM_ENDING2;
 			else owner.bgmStatus.bgm = BGMStatus.BGM_ENDING1;
 		}
 
@@ -1482,7 +1619,8 @@ public class ChallengerMode extends DummyMode {
 		// 最後の frame
 		gradepointpps += (float) (engine.statistics.pps / (1 + ((engine.statistics.level /100)/ 4)))/60;
 		if(gradepointpps >= 1.0) {
-			gradePoint += 1;
+			gradePoint++;
+			statGradePoints++;
 			gradepointpps -= (float) 1;
 		}
 		if((engine.ending == 0) && (engine.statc[0] >= engine.statc[1] - 1) && (!lvupflag)) {
@@ -1518,9 +1656,9 @@ public class ChallengerMode extends DummyMode {
 		if((engine.statistics.level >= 100) && (!alwaysghost)) engine.ghost = false;
 
 		// BGM fadeout
-		if((tableBGMFadeout[bgmlv] != -1) && (engine.statistics.level >= tableBGMFadeout[bgmlv]) && !always20g)
+		if((tableBGMFadeout[bgmlv] != -1) && (engine.statistics.level >= tableBGMFadeout[bgmlv]) && startlevel < 21 && !always20g && !furth)
 			owner.bgmStatus.fadesw  = true;
-		else if((tableBGMFadeout[bgmlv] != -1) && (engine.statistics.level >= tableBGMFadeout[bgmlv] -400) && always20g)
+		else if((tableBGMFadeout[bgmlv] != -1) && (engine.statistics.level >= tableBGMFadeout[bgmlv] -400) && startlevel < 21 && always20g && !furth)
 			owner.bgmStatus.fadesw  = true;
 		if(always20g && engine.statistics.level > (20 - confignpieces) * 100 && engine.statistics.level < 2000) {
 			engine.ruleopt.nextDisplay = 19 - (engine.statistics.level / 100);
@@ -1575,7 +1713,7 @@ public class ChallengerMode extends DummyMode {
 		}
 		if(engine.statistics.level >= 600 && !always20g) engine.bone = true;
 		else if(engine.statistics.level >= 200 && always20g) engine.bone = true;
-		if(engine.statistics.level == 2100 || (always20g && engine.statistics.level > 1600)) {
+		if(engine.statistics.level == 2100 || (always20g && engine.statistics.level > 1600) || (version > 2 && (speed_level == 2100 || (always20g && speed_level > 1600)))) {
 			if(lines == 1) garbageDelay += 1;
 			if(lines == 2) garbageDelay += 2;
 			if(lines == 3) garbageDelay += 4;
@@ -1604,15 +1742,16 @@ public class ChallengerMode extends DummyMode {
 			if(always20g && engine.statistics.level == 2100) point *= 10 + (rolltime / 300);
 			else if(always20g && engine.statistics.level > 1999) point *= 5;
 			else if(always20g && engine.statistics.level > 1899) point *= 2;
-			gradePoint += (int)point;
+			gradePoint += (long)point;
+			statGradePoints += (long)point;
 	
 			
 			while(gradePoint >= gradescorereq) {
-				gradePoint = (int) (gradePoint - gradescorereq);
+				gradePoint = (long) (gradePoint - gradescorereq);
 				gradeDecay = 0;
 				gradeInternal++;
 				if(engine.statistics.level < 100) gradescorereq *= 1.25;
-				else if(modetype == 0 || modetype == 2) gradescorereq =  gradescorereq * Math.abs(1 + ((Math.abs(Math.floor((double)engine.statistics.level /100)+1)/4)));
+				else if(modetype == 0 || modetype == 2 || modetype == 4) gradescorereq =  gradescorereq * Math.abs(1 + ((Math.abs(Math.floor((double)engine.statistics.level /100)+1)/4)));
 				if(modetype == 1 || modetype == 3)
 				{
 					if((tableGradeChangeClassic[grade] != -1) && (gradeInternal >= tableGradeChangeClassic[grade])) {
@@ -1650,7 +1789,7 @@ public class ChallengerMode extends DummyMode {
 			}
 	
 			// AC medal
-			if(engine.field.isEmpty()) {
+			if(engine.field.isEmpty() && lvlroll == true) {
 				engine.playSE("bravo");
 	
 				if(medalAC < 3) {
@@ -1713,7 +1852,7 @@ public class ChallengerMode extends DummyMode {
 			engine.statistics.level += levelplus;
 			levelUp(engine);
 
-			if(engine.statistics.level >= 2100) {
+			if(engine.statistics.level >= 2100 && modetype < 4) {
 				// Ending
 				engine.statistics.level = 2100;
 				engine.timerActive = true;
@@ -1737,6 +1876,28 @@ public class ChallengerMode extends DummyMode {
 
 				// 条件を全て満たしているなら消えRoll 発動
 				mrollFlag = true;
+			}
+			if(engine.statistics.level >= 500 && modetype == 4) {
+				// Ending
+				engine.statistics.level = 500;
+				engine.timerActive = true;
+				engine.ending = 1;
+				rollclear = 1;
+
+				lastGradeTime = engine.statistics.time;
+				normaltime = engine.statistics.time;
+
+				sectionlasttime = sectiontime[levelb / 100];
+				sectionscomp++;
+				setAverageSectionTime();
+
+				// ST medal
+				stMedalCheck(engine, levelb / 100);
+
+				// RO medal
+				roMedalCheck(engine);
+				
+				checkRegret(engine, levelb);
 			} else if( ((nextseclv ==  500) && (engine.statistics.level >=  500) && (torikan > 0) && (engine.statistics.time > torikan)) ||
 					   ((nextseclv == 1000) && (engine.statistics.level >= 1000) && (torikan > 0) && (engine.statistics.time > torikan * 1.5)) ||
 					   ((nextseclv == 1500) && (engine.statistics.level >= 1500) && (torikan > 0) && (engine.statistics.time > torikan * 2)) ||
@@ -1748,6 +1909,7 @@ public class ChallengerMode extends DummyMode {
 				if(nextseclv == 500) engine.statistics.level = 500;
 				if(nextseclv == 1000) engine.statistics.level = 1000;
 
+				engine.lives = 0;
 				engine.gameEnded();
 				engine.staffrollEnable = false;
 				engine.ending = 1;
@@ -1777,13 +1939,13 @@ public class ChallengerMode extends DummyMode {
 				owner.backgroundStatus.fadebg = nextseclv / 100;
 
 				// BGM切り替え
-				if((tableBGMChange[bgmlv] != -1) && (engine.statistics.level >= tableBGMChange[bgmlv]) && !always20g) {
+				if((tableBGMChange[bgmlv] != -1) && (engine.statistics.level >= tableBGMChange[bgmlv]) && !always20g && !furth) {
 					bgmlv++;
 					owner.bgmStatus.fadesw = false;
 					owner.bgmStatus.bgm = bgmlv;
 				}
 
-				else if((tableBGMChange[bgmlv] != -1) && (engine.statistics.level >= tableBGMChange[bgmlv] - 400) && always20g) {
+				else if((tableBGMChange[bgmlv] != -1) && (engine.statistics.level >= tableBGMChange[bgmlv] - 400) && always20g && !furth) {
 					bgmlv++;
 					owner.bgmStatus.fadesw = false;
 					owner.bgmStatus.bgm = bgmlv;
@@ -1857,11 +2019,16 @@ public class ChallengerMode extends DummyMode {
 	@Override
 	public void onLast(GameEngine engine, int playerID) {
 		if(gradeflash > 0) gradeflash--;
+		
+		if(login0arrwarningtime > 0) login0arrwarningtime--;
+		if(login0arrwarningtime % 6 == 0 && login0arrwarningtime > 0 && engine.getDASDelay() == 0) engine.playSE("garbage");
 
 		// 獲得Render score
 		if(scgettime > 0) scgettime--;
 		
 		if(tspintime > 0) tspintime--;
+		
+		if(engine.statistics.level >= 1900) {owner.backgroundStatus.bg = 19;  owner.backgroundStatus.fadebg = 19;}
 		
 		// REGRETиЎЁз¤є
 		if(regretdispframe > 0) regretdispframe--;
@@ -1873,17 +2040,20 @@ public class ChallengerMode extends DummyMode {
 		if(engine.statistics.time >= 36000) {
 			setSpeed(engine);
 		}
-		if (engine.statistics.level == 2100 && rolltime < ROLLTIMELIMIT && engine.ending == 2 && !challengerGameOver) engine.statistics.time++;
+		if (engine.statistics.level == 2100 && modetype < 4 && rolltime < ROLLTIMELIMIT && engine.ending == 2 && !challengerGameOver) engine.statistics.time++;
+		if (engine.statistics.level == 500 && modetype == 4 && rolltime < ROLLTIMELIMIT / 2.03 && engine.ending == 2 && !challengerGameOver) engine.statistics.time++;
 		
 		if (gradeincreaseamount > 0 && gradeincreasedelay == 0)
 		{
-			if ((grade < 87 || rollclear > 1) && (modetype == 1 || modetype == 3)) grade++;
-			if ((grade < 18 || rollclear > 1) && (modetype == 0 || modetype == 2)) grade++;
-			if ((modetype == 0 || modetype == 2) && grade == 19 && rollclear < 1) gradeincreaseamount = 0;
-			if ((modetype == 1 || modetype == 3) && grade == 87 && rollclear < 1) gradeincreaseamount = 0;
-			if (always20g && (modetype == 0 || modetype == 2) && grade == 19 && rollclear > 1) grade++;
-			if (always20g && (modetype == 1 || modetype == 3) && grade == 87 && rollclear > 1) grade++;
-			gradeincreaseamount--;
+			if ((grade < 92 || rollclear > 1) && (modetype == 1 || modetype == 3)) grade++;
+			if ((grade < 18 || rollclear > 1) && (modetype == 0 || modetype == 2 || modetype == 4)) grade++;
+			if ((modetype == 0 || modetype == 2 || modetype == 4) && grade == 19 && rollclear < 1) gradeincreaseamount = 0;
+			if ((modetype == 1 || modetype == 3) && grade == 92 && rollclear < 1) gradeincreaseamount = 0;
+			if (always20g && (modetype == 0 || modetype == 2 || modetype == 4) && grade == 19 && rollclear > 1) grade++;
+			if (always20g && (modetype == 1 || modetype == 3) && grade == 92 && rollclear > 1) grade++;
+			if (furth && (modetype == 0 || modetype == 2 || modetype == 4) && grade >= 19 && rollclear > 1) { grade += 2; gradeincreaseamount = 0;}
+			if (furth && (modetype == 1 || modetype == 3) && grade >= 92 && rollclear > 1) { grade += 2; gradeincreaseamount = 0;}
+			if (gradeincreaseamount > 0 ) gradeincreaseamount--;
 			if(modetype == 1 || modetype == 3) gradeincreasedelay = 5;
 			else gradeincreasedelay = 20;
 			engine.playSE("gradeup");
@@ -1905,19 +2075,20 @@ public class ChallengerMode extends DummyMode {
 
 			// Time meter
 			int remainRollTime = ROLLTIMELIMIT - rolltime;
-			engine.meterValue = (remainRollTime * receiver.getMeterMax(engine)) / ROLLTIMELIMIT;
+			if (modetype == 4) { remainRollTime = (int)(ROLLTIMELIMIT / 2.03) - rolltime; engine.meterValue = (remainRollTime * receiver.getMeterMax(engine)) / (int)(ROLLTIMELIMIT / 2.03);}
+			else engine.meterValue = (remainRollTime * receiver.getMeterMax(engine)) / ROLLTIMELIMIT;
 			engine.meterColor = GameEngine.METER_COLOR_GREEN;
 			if(remainRollTime <= 30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW;
 			if(remainRollTime <= 20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE;
 			if(remainRollTime <= 10*60) engine.meterColor = GameEngine.METER_COLOR_RED;
 
 			// Roll 終了
-			if(rolltime >= ROLLTIMELIMIT) {
+			if((rolltime >= ROLLTIMELIMIT && modetype < 4) || (rolltime >= ROLLTIMELIMIT / 2.03 && modetype == 4)) {
 				rollclear = 2;
+				engine.lives = 0;
 
 				if(mrollFlag == true) {
-					engine.lives = 0;
-					if (modetype == 1 || modetype == 3) gradeincreaseamount = 87 - grade;
+					if (modetype == 1 || modetype == 3) gradeincreaseamount = 93 - grade;
 					else gradeincreaseamount = 19 - grade;
 					gradeflash = 180;
 					lastGradeTime = engine.statistics.time;
@@ -1943,7 +2114,7 @@ public class ChallengerMode extends DummyMode {
 		// 段位M
 		if(engine.lives < 1 && initgameover) challengerGameOver = true;
 		if((mrollFlag == true) && (grade < 86) && (engine.ending == 2) && (engine.statc[0] == 0) && engine.lives < 1) {
-			if ((modetype == 1 || modetype == 3) && grade < 86) gradeincreaseamount = 86 - grade;
+			if ((modetype == 1 || modetype == 3) && grade < 92) gradeincreaseamount = 92 - grade;
 			if ((modetype == 0 || modetype == 2) && grade < 18) gradeincreaseamount = 18 - grade;
 			gradeflash = 180;
 			lastGradeTime = engine.statistics.time;
@@ -1956,18 +2127,33 @@ public class ChallengerMode extends DummyMode {
 			secretGrade = engine.field.getSecretGrade();
 
 			if(enableexam && engine.lives < 1) {
-				if(grade < (qualifiedGrade - 7)) {
-					demotionPoints += (qualifiedGrade - grade - 7);
+				if(modetype == 3)
+				{
+					if(grade < (qualifiedClassicGrade - 7)) {
+						classicDemotionPoints += (qualifiedClassicGrade - grade - 7);
+					}
+					if(classicPromotionFlag && grade >= classicPromotionalExam) {
+						qualifiedClassicGrade = classicPromotionalExam;
+						classicDemotionPoints = 0;
+					}
+					if(classicDemotionFlag && grade < classicDemotionExamGrade) {
+						qualifiedClassicGrade = classicDemotionExamGrade - 1;
+						if(qualifiedClassicGrade < 0) qualifiedClassicGrade = 0;
+					}
 				}
-				if(promotionFlag && grade >= promotionalExam) {
-					qualifiedGrade = promotionalExam;
-					demotionPoints = 0;
+				else{
+					if(grade < (qualifiedGrade - 7)) {
+						demotionPoints += (qualifiedGrade - grade - 7);
+					}
+					if(promotionFlag && grade >= promotionalExam) {
+						qualifiedGrade = promotionalExam;
+						demotionPoints = 0;
+					}
+					if(demotionFlag && grade < demotionExamGrade) {
+						qualifiedGrade = demotionExamGrade - 1;
+						if(qualifiedGrade < 0) qualifiedGrade = 0;
+					}
 				}
-				if(demotionFlag && grade < demotionExamGrade) {
-					qualifiedGrade = demotionExamGrade - 1;
-					if(qualifiedGrade < 0) qualifiedGrade = 0;
-				}
-
 			}
 		}
 
@@ -1980,79 +2166,134 @@ public class ChallengerMode extends DummyMode {
 	 */
 	@Override
 	public void renderResult(GameEngine engine, int playerID) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE" + (engine.statc[1] + 1) + "/4", EventReceiver.COLOR_RED);
 
-		if(engine.statc[1] == 0) {
-			int gcolor = EventReceiver.COLOR_WHITE;
-			if((rollclear == 1) || (rollclear == 3)) gcolor = EventReceiver.COLOR_GREEN;
-			if((rollclear == 2) || (rollclear == 4)) gcolor = EventReceiver.COLOR_ORANGE;
-			receiver.drawMenuFont(engine, playerID, 0, 2, "GRADE", EventReceiver.COLOR_BLUE);
-			String strGrade;
-			if (modetype == 1 || modetype == 3) strGrade = String.format("%10s", tableGradeNameClassic[grade]);
-			else strGrade = String.format("%10s", tableGradeName[grade]);
-			receiver.drawMenuFont(engine, playerID, 0, 3, strGrade, gcolor);
+		if(passframe > 0) {
+			if (promotionFlag) {
+				receiver.drawMenuFont(engine, playerID, 0, 2, "PROMOTION", EventReceiver.COLOR_YELLOW);
+				receiver.drawMenuFont(engine, playerID, 6, 3, "EXAM", EventReceiver.COLOR_YELLOW);
+				receiver.drawMenuFont(engine, playerID, 4, 6, getGradeName(promotionalExam), (passframe % 4 == 0),
+						EventReceiver.COLOR_WHITE, EventReceiver.COLOR_ORANGE);
 
-			if(engine.statistics.level < 2100) drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR_BLUE,
-					STAT_SCORE, STAT_LINES, STAT_LEVEL_MANIA, STAT_TIME);
-			else { drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR_BLUE,
-					STAT_SCORE, STAT_LINES, STAT_LEVEL_MANIA);
-			receiver.drawMenuFont(engine, playerID, 0, 10, "TIME", EventReceiver.COLOR_BLUE);
-			receiver.drawMenuFont(engine, playerID, 0, 11, String.format("%10s", GeneralUtil.getTime(normaltime)));}
-			if(always20g) drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR_BLUE, rankingRank20g);
-			else drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR_BLUE, rankingRank);
-			if(secretGrade > 4) {
-				drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR_BLUE,
-						"S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]));
-			}
-		} else if(engine.statc[1] == 1) {
-			receiver.drawMenuFont(engine, playerID, 0, 2, "SECT 0-10", EventReceiver.COLOR_BLUE);
+				if(passframe < 420) {
+					if(grade < promotionalExam) {
+						receiver.drawMenuFont(engine,playerID,3,11,"FAIL",(passframe % 4 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_RED);
+					} else {
+						receiver.drawMenuFont(engine,playerID,2,11,"PASS!!",(passframe % 4 == 0),EventReceiver.COLOR_ORANGE,EventReceiver.COLOR_YELLOW);
+					}
+				}
+			} else if (demotionFlag) {
+				receiver.drawMenuFont(engine, playerID, 0, 2, "DEMOTION", EventReceiver.COLOR_RED);
+				receiver.drawMenuFont(engine, playerID, 6, 3, "EXAM", EventReceiver.COLOR_RED);
 
-			int color = EventReceiver.COLOR_WHITE;
-			for(int i = 0; i < 11; i++) {
-				if (regretsection[i]) color = EventReceiver.COLOR_RED;
-				else if (coolsection[i] && sectionIsNewRecord[i]) color = EventReceiver.COLOR_BLUE;
-				else if (sectionIsNewRecord[i]) color = EventReceiver.COLOR_DARKBLUE;
-				else if (coolsection[i]) color = EventReceiver.COLOR_GREEN;
-				else color = EventReceiver.COLOR_WHITE;
-				if(sectiontime[i] > 0) {
-					receiver.drawMenuFont(engine, playerID, 2, 3 + i, GeneralUtil.getTime(sectiontime[i]), color);
+				if(passframe < 420) {
+					if(grade < demotionExamGrade) {
+						receiver.drawMenuFont(engine,playerID,3,11,"FAIL",(passframe % 4 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_RED);
+					} else {
+						receiver.drawMenuFont(engine,playerID,3,11,"PASS",(passframe % 4 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_YELLOW);
+					}
 				}
 			}
+			if (classicPromotionFlag) {
+				receiver.drawMenuFont(engine, playerID, 0, 2, "PROMOTION", EventReceiver.COLOR_YELLOW);
+				receiver.drawMenuFont(engine, playerID, 6, 3, "EXAM", EventReceiver.COLOR_YELLOW);
+				receiver.drawMenuFont(engine, playerID, 4, 6, getGradeName(classicPromotionalExam), (passframe % 4 == 0),
+						EventReceiver.COLOR_WHITE, EventReceiver.COLOR_ORANGE);
 
-			if(sectionavgtime > 0) {
-				receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", EventReceiver.COLOR_BLUE);
-				receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime));
-			}
-		}else if(engine.statc[1] == 2) {
-			receiver.drawMenuFont(engine, playerID, 0, 2, "SECT 11-20", EventReceiver.COLOR_BLUE);
+				if(passframe < 420) {
+					if(grade < classicPromotionalExam) {
+						receiver.drawMenuFont(engine,playerID,3,11,"FAIL",(passframe % 4 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_RED);
+					} else {
+						receiver.drawMenuFont(engine,playerID,2,11,"PASS!!",(passframe % 4 == 0),EventReceiver.COLOR_ORANGE,EventReceiver.COLOR_YELLOW);
+					}
+				}
+			} else if (classicDemotionFlag) {
+				receiver.drawMenuFont(engine, playerID, 0, 2, "DEMOTION", EventReceiver.COLOR_RED);
+				receiver.drawMenuFont(engine, playerID, 6, 3, "EXAM", EventReceiver.COLOR_RED);
 
-			int color = EventReceiver.COLOR_WHITE;
-			for(int i = 11; i < sectiontime.length; i++) {
-				if (regretsection[i]) color = EventReceiver.COLOR_RED;
-				else if (coolsection[i] && sectionIsNewRecord[i]) color = EventReceiver.COLOR_BLUE;
-				else if (sectionIsNewRecord[i]) color = EventReceiver.COLOR_DARKBLUE;
-				else if (coolsection[i]) color = EventReceiver.COLOR_GREEN;
-				else color = EventReceiver.COLOR_WHITE;
-				if(sectiontime[i] > 0) {
-					receiver.drawMenuFont(engine, playerID, 2, 3 + i - 11, GeneralUtil.getTime(sectiontime[i]), color);
+				if(passframe < 420) {
+					if(grade < classicDemotionExamGrade) {
+						receiver.drawMenuFont(engine,playerID,3,11,"FAIL",(passframe % 4 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_RED);
+					} else {
+						receiver.drawMenuFont(engine,playerID,3,11,"PASS",(passframe % 4 == 0),EventReceiver.COLOR_WHITE,EventReceiver.COLOR_YELLOW);
+					}
 				}
 			}
-
-			if(sectionavgtime > 0) {
-				receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", EventReceiver.COLOR_BLUE);
-				receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime));
+		} else {
+			receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE" + (engine.statc[1] + 1) + "/4", EventReceiver.COLOR_RED);
+	
+			if(engine.statc[1] == 0) {
+				int gcolor = EventReceiver.COLOR_WHITE;
+				if((rollclear == 1) || (rollclear == 3)) gcolor = EventReceiver.COLOR_GREEN;
+				if((rollclear == 2) || (rollclear == 4)) gcolor = EventReceiver.COLOR_ORANGE;
+				receiver.drawMenuFont(engine, playerID, 0, 2, "GRADE", EventReceiver.COLOR_BLUE);
+				String strGrade;
+				if (modetype == 1 || modetype == 3) strGrade = String.format("%10s", tableGradeNameClassic[grade]);
+				else strGrade = String.format("%10s", tableGradeName[grade]);
+				receiver.drawMenuFont(engine, playerID, 0, 3, strGrade, gcolor);
+	
+				if((engine.statistics.level < 2100 && modetype < 4) || (engine.statistics.level < 500 && modetype == 4)) drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR_BLUE,
+						STAT_SCORE, STAT_LINES, STAT_LEVEL_MANIA, STAT_TIME);
+				else { drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR_BLUE,
+						STAT_SCORE, STAT_LINES, STAT_LEVEL_MANIA);
+				receiver.drawMenuFont(engine, playerID, 0, 10, "TIME", EventReceiver.COLOR_BLUE);
+				receiver.drawMenuFont(engine, playerID, 0, 11, String.format("%10s", GeneralUtil.getTime(normaltime)));}
+				if(always20g) drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR_BLUE, rankingRank20g);
+				else drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR_BLUE, rankingRank);
+				if(secretGrade > 4) {
+					drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR_BLUE,
+							"S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]));
+				}
+			} else if(engine.statc[1] == 1) {
+				receiver.drawMenuFont(engine, playerID, 0, 2, "SECT 0-10", EventReceiver.COLOR_BLUE);
+	
+				int color = EventReceiver.COLOR_WHITE;
+				for(int i = 0; i < 11; i++) {
+					if (regretsection[i]) color = EventReceiver.COLOR_RED;
+					else if (coolsection[i] && sectionIsNewRecord[i]) color = EventReceiver.COLOR_BLUE;
+					else if (sectionIsNewRecord[i]) color = EventReceiver.COLOR_DARKBLUE;
+					else if (coolsection[i]) color = EventReceiver.COLOR_GREEN;
+					else color = EventReceiver.COLOR_WHITE;
+					if(sectiontime[i] > 0) {
+						receiver.drawMenuFont(engine, playerID, 2, 3 + i, GeneralUtil.getTime(sectiontime[i]), color);
+					}
+				}
+	
+				if(sectionavgtime > 0) {
+					receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", EventReceiver.COLOR_BLUE);
+					receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime));
+				}
+			}else if(engine.statc[1] == 2) {
+				receiver.drawMenuFont(engine, playerID, 0, 2, "SECT 11-20", EventReceiver.COLOR_BLUE);
+	
+				int color = EventReceiver.COLOR_WHITE;
+				for(int i = 11; i < sectiontime.length; i++) {
+					if (regretsection[i]) color = EventReceiver.COLOR_RED;
+					else if (coolsection[i] && sectionIsNewRecord[i]) color = EventReceiver.COLOR_BLUE;
+					else if (sectionIsNewRecord[i]) color = EventReceiver.COLOR_DARKBLUE;
+					else if (coolsection[i]) color = EventReceiver.COLOR_GREEN;
+					else color = EventReceiver.COLOR_WHITE;
+					if(sectiontime[i] > 0) {
+						receiver.drawMenuFont(engine, playerID, 2, 3 + i - 11, GeneralUtil.getTime(sectiontime[i]), color);
+					}
+				}
+	
+				if(sectionavgtime > 0) {
+					receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", EventReceiver.COLOR_BLUE);
+					receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime));
+				}
+			} else if(engine.statc[1] == 3) {
+				receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", EventReceiver.COLOR_BLUE);
+				if(medalAC >= 1) receiver.drawMenuFont(engine, playerID, 5, 3, "AC", getMedalFontColor(medalAC));
+				if(medalST >= 1) receiver.drawMenuFont(engine, playerID, 8, 3, "ST", getMedalFontColor(medalST));
+				if(medalSK >= 1) receiver.drawMenuFont(engine, playerID, 5, 4, "SK", getMedalFontColor(medalSK));
+				if(medalRE >= 1) receiver.drawMenuFont(engine, playerID, 8, 4, "RE", getMedalFontColor(medalRE));
+				if(medalRO >= 1) receiver.drawMenuFont(engine, playerID, 5, 5, "RO", getMedalFontColor(medalRO));
+				if(medalCO >= 1) receiver.drawMenuFont(engine, playerID, 8, 5, "CO", getMedalFontColor(medalCO));
+	
+				drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR_BLUE,
+						STAT_LPM, STAT_SPM, STAT_PIECE, STAT_PPS);
+				drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR_BLUE, "TOTAL GRSC", String.format("%10s", statGradePoints));
 			}
-		} else if(engine.statc[1] == 3) {
-			receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", EventReceiver.COLOR_BLUE);
-			if(medalAC >= 1) receiver.drawMenuFont(engine, playerID, 5, 3, "AC", getMedalFontColor(medalAC));
-			if(medalST >= 1) receiver.drawMenuFont(engine, playerID, 8, 3, "ST", getMedalFontColor(medalST));
-			if(medalSK >= 1) receiver.drawMenuFont(engine, playerID, 5, 4, "SK", getMedalFontColor(medalSK));
-			if(medalRE >= 1) receiver.drawMenuFont(engine, playerID, 8, 4, "RE", getMedalFontColor(medalRE));
-			if(medalRO >= 1) receiver.drawMenuFont(engine, playerID, 5, 5, "RO", getMedalFontColor(medalRO));
-			if(medalCO >= 1) receiver.drawMenuFont(engine, playerID, 8, 5, "CO", getMedalFontColor(medalCO));
-
-			drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR_BLUE,
-					STAT_LPM, STAT_SPM, STAT_PIECE, STAT_PPS);
 		}
 	}
 
@@ -2071,20 +2312,42 @@ public class ChallengerMode extends DummyMode {
 					passframe = 0;
 			}
 
-			if(promotionFlag) {
-				if(passframe == 420) {
-					if(grade >= promotionalExam) {
-						engine.playSE("excellent");
-					} else {
-						engine.playSE("regret");
+			if(modetype == 3)
+			{
+				if(classicPromotionFlag) {
+					if(passframe == 420) {
+						if(grade >= classicPromotionalExam) {
+							engine.playSE("excellent");
+						} else {
+							engine.playSE("regret");
+						}
+					}
+				} else if(classicDemotionFlag) {
+					if(passframe == 420) {
+						if(grade >= qualifiedClassicGrade) {
+							engine.playSE("gradeup");
+						} else {
+							engine.playSE("gameover");
+						}
 					}
 				}
-			} else if(demotionFlag) {
-				if(passframe == 420) {
-					if(grade >= qualifiedGrade) {
-						engine.playSE("gradeup");
-					} else {
-						engine.playSE("gameover");
+			}
+			else {
+				if(promotionFlag) {
+					if(passframe == 420) {
+						if(grade >= promotionalExam) {
+							engine.playSE("excellent");
+						} else {
+							engine.playSE("regret");
+						}
+					}
+				} else if(demotionFlag) {
+					if(passframe == 420) {
+						if(grade >= qualifiedGrade) {
+							engine.playSE("gradeup");
+						} else {
+							engine.playSE("gameover");
+						}
 					}
 				}
 			}
@@ -2125,18 +2388,28 @@ public class ChallengerMode extends DummyMode {
 		owner.replayProp.setProperty("result.grade.number", grade);
 		owner.replayProp.setProperty("challenger.version", version);
 		owner.replayProp.setProperty("challenger.furthest", furth);
-		owner.replayProp.setProperty("challenger.exam", (promotionFlag ? promotionalExam : 0));
-		owner.replayProp.setProperty("challenger.demopoint", demotionPoints);
-		owner.replayProp.setProperty("challenger.demotionExamGrade", demotionExamGrade);
+		if(modetype == 3)
+		{
+			owner.replayProp.setProperty("challenger.classicexam", (classicPromotionFlag ? classicPromotionalExam : 0));
+			owner.replayProp.setProperty("challenger.classicdemopoint", classicDemotionPoints);
+			owner.replayProp.setProperty("challenger.classicdemotionExamGrade", classicDemotionExamGrade);
+		}
+		else
+		{
+			owner.replayProp.setProperty("challenger.exam", (promotionFlag ? promotionalExam : 0));
+			owner.replayProp.setProperty("challenger.demopoint", demotionPoints);
+			owner.replayProp.setProperty("challenger.demotionExamGrade", demotionExamGrade);
+		}
+		owner.replayProp.setProperty("challenger.aitype", AIused);
 
 		// Update rankings
-		if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null) && dtetlives == 1) {
+		if((owner.replayMode == false) && (startlevel == 0) && (big == false) && (engine.ai == null) && dtetlives == 1 && modetype < 4 && !furth) {
 
 			int rgrade = grade;
-			if (modetype == 1 || modetype == 3)
+			if (modetype == 3)
 			{
-				if(enableexam && (rgrade >= 87) && (qualifiedClassicGrade < 87)) {
-					rgrade = 87;
+				if(enableexam && (rgrade >= 92) && (qualifiedClassicGrade < 92)) {
+					rgrade = 92;
 				}
 			}
 			else
@@ -2215,7 +2488,11 @@ public class ChallengerMode extends DummyMode {
 		for(int i = 0; i < GRADE_HISTORY_SIZE; i++) {
 			gradeHistory[i] = prop.getProperty("challenger.gradehistory." + ruleName + "." + i, -1);
 		}
+		for(int i = 0; i < CLASSIC_GRADE_HISTORY_SIZE; i++) {
+			classicGradeHistory[i] = prop.getProperty("challenger.classicgradehistory." + ruleName + "." + i, -1);
+		}
 		qualifiedGrade = prop.getProperty("challenger.qualified." + ruleName, 0);
+		qualifiedClassicGrade = prop.getProperty("challenger.qualified.classic." + ruleName, 0);
 		demotionPoints = prop.getProperty("challenger.demopoint." + ruleName, 0);
 	}
 
@@ -2306,10 +2583,16 @@ public class ChallengerMode extends DummyMode {
 				}
 			}
 
-			for(int i = 0; i < GRADE_HISTORY_SIZE; i++) {
-				prop.setProperty("challenger.gradehistory." + ruleName+ "." + i, gradeHistory[i]);
+			if (modetype == 3)
+			for(int i = 0; i < CLASSIC_GRADE_HISTORY_SIZE; i++) {
+				prop.setProperty("challenger.classicgradehistory." + ruleName+ "." + i, classicGradeHistory[i]);
 			}
+			else
+				for(int i = 0; i < GRADE_HISTORY_SIZE; i++) {
+					prop.setProperty("challenger.gradehistory." + ruleName+ "." + i, gradeHistory[i]);
+				}
 			prop.setProperty("challenger.qualified." + ruleName, qualifiedGrade);
+			prop.setProperty("challenger.qualified.classic." + ruleName, qualifiedClassicGrade);
 			prop.setProperty("challenger.demopoint." + ruleName, demotionPoints);
 		}
 	}
@@ -2475,11 +2758,18 @@ public class ChallengerMode extends DummyMode {
 	 * @param gr ж®µдЅЌ
 	 */
 	private void updateGradeHistory(int gr) {
-		for(int i = GRADE_HISTORY_SIZE - 1; i > 0; i--) {
-			gradeHistory[i] = gradeHistory[i - 1];
+		if (modetype == 3) {
+			for(int i = CLASSIC_GRADE_HISTORY_SIZE - 1; i > 0; i--) {
+				classicGradeHistory[i] = classicGradeHistory[i - 1];
+			}
+			classicGradeHistory[0] = gr;
 		}
-		gradeHistory[0] = gr;
-
+		else {
+			for(int i = GRADE_HISTORY_SIZE - 1; i > 0; i--) {
+				gradeHistory[i] = gradeHistory[i - 1];
+			}
+			gradeHistory[0] = gr;
+		}
 	}
 
 	/**
@@ -2488,25 +2778,26 @@ public class ChallengerMode extends DummyMode {
 	 */
 	private void setPromotionalGrade() {
 		int gradesOver;
+		int classicGradesOver;
 
 		if(modetype == 3)
 		{
 			for(int i = tableGradeNameClassic.length - 1; i >= 0; i--) {
-				gradesOver = 0;
-				for(int j = 0; j < GRADE_HISTORY_SIZE; j++) {
-					if(gradeHistory[j] == -1) {
+				classicGradesOver = 0;
+				for(int j = 0; j < CLASSIC_GRADE_HISTORY_SIZE; j++) {
+					if(classicGradeHistory[j] == -1) {
 						classicPromotionalExam = 0;
 						return;
 					} else {
-						if(gradeHistory[j] >= i) {
-							gradesOver++;
+						if(classicGradeHistory[j] >= i) {
+							classicGradesOver++;
 						}
 					}
 				}
-				if(gradesOver > 3) {
+				if(classicGradesOver > 3) {
 					classicPromotionalExam = i;
-					if(qualifiedClassicGrade < 87 && classicPromotionalExam == 88) {
-						classicPromotionalExam = 87;
+					if(qualifiedClassicGrade < 92 && classicPromotionalExam == 93) {
+						classicPromotionalExam = 92;
 					}
 					return;
 				}

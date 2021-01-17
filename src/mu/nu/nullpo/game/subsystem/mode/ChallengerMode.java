@@ -103,6 +103,10 @@ public class ChallengerMode extends DummyMode {
 
 	/** BGM change levels */
 	private static final int[] tableBGMChange  = {400,600,700,900,1000,-1};
+	/** BGM change levels in settings */
+	private static final int[] tableBGMChangeMenu = {0,0,0,0,1,1,2,3,3,4,5,5,5,5,5,5,5,5,5,5,5,5,11,11,11};
+	/** BGM change levels in settings */
+	private static final int[] tableBGMChangeMenu20g = {1,1,2,3,3,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,11,11,11};
 
 	/** Line clear時に入る段位 point */
 	private static final int[] tableGradePoint =
@@ -500,6 +504,9 @@ public class ChallengerMode extends DummyMode {
 	private int login0arrwarningtime;
 	private boolean AIused;
 	private boolean lvlroll;
+	private boolean started;
+	private boolean musicinitialised;
+	private int nextpieces20genforced;
 
 	/*
 	 * Mode name
@@ -527,10 +534,13 @@ public class ChallengerMode extends DummyMode {
 		engine.ruleopt.lockresetLimitMove = 15;
 		engine.ruleopt.lockresetLimitRotate = 9;
 		engine.staffrollEnableStatistics = true;
+		musicinitialised = false;
+		nextpieces20genforced = 100;
 		if (engine.ai != null && owner.replayMode == false) AIused = true;
 		else if (owner.replayMode == false) AIused = false;
 		lvlroll = false;
 		statGradePoints = 0;
+		normaltime = 0;
 		furth = false;
 		login0arrwarningtime = 300;
 		tspintime = 0;
@@ -561,6 +571,7 @@ public class ChallengerMode extends DummyMode {
 		cooldisplayed = false;
 		cooldispframe = 0;
 		regretdispframe = 0;
+		started = false;
 		rolltime = 0;
 		rollclear = 0;
 		rollstarted = false;
@@ -683,8 +694,15 @@ public class ChallengerMode extends DummyMode {
 		}
 		if (engine.getDASDelay() == 0 || (engine.ai != null || AIused)) { engine.playSE("danger");engine.playSE("danger");engine.playSE("danger"); engine.playSE("garbage");}
 
+		if(always20g && startlevel > (20 - confignpieces) && startlevel < 20) {
+			engine.ruleopt.nextDisplay = 19 - startlevel;
+			nextpieces20genforced = 19 - startlevel;
+		}
+		else if (always20g && startlevel >= 20) { engine.ruleopt.nextDisplay = 0; nextpieces20genforced = 0;}
 		if(startlevel > 19) owner.backgroundStatus.bg = 19;
 		else owner.backgroundStatus.bg = startlevel;
+		owner.bgmStatus.volume = 1;
+		owner.bgmStatus.bgm = -1;
 	}
 
 	/**
@@ -1001,7 +1019,20 @@ public class ChallengerMode extends DummyMode {
 					if(modetype < 4 &&startlevel > 21) startlevel = 0;
 					if(modetype == 4 && startlevel < 0) startlevel = 5;
 					if(modetype == 4 && startlevel > 5) startlevel = 0;
+					if (!furth && !always20g) owner.bgmStatus.bgm = tableBGMChangeMenu[startlevel];
+					else if (always20g && !furth) owner.bgmStatus.bgm = tableBGMChangeMenu20g[startlevel];
+					else owner.bgmStatus.bgm = 15;
+					if (modetype == 4 && startlevel == 5) owner.bgmStatus.bgm = BGMStatus.BGM_ENDING2;
+					if(always20g && startlevel > (20 - confignpieces) && startlevel < 20) {
+						engine.ruleopt.nextDisplay = 19 - startlevel;
+						nextpieces20genforced = 19 - startlevel;
+					}
+					else if (always20g && startlevel >= 20) { engine.ruleopt.nextDisplay = 0; nextpieces20genforced = 0;}
+					if (confignpieces <= nextpieces20genforced || !always20g) engine.ruleopt.nextDisplay = confignpieces;
+					else engine.ruleopt.nextDisplay = nextpieces20genforced;
 					if(startlevel < 6) engine.bone = false;
+					if(always20g && startlevel >= 20) engine.ruleopt.holdEnable = false;
+					else engine.ruleopt.holdEnable = true;
 					break;
 				case 1:
 					alwaysghost = !alwaysghost;
@@ -1009,15 +1040,34 @@ public class ChallengerMode extends DummyMode {
 				case 2:
 					always20g = !always20g;
 					if(modetype == 4) always20g = false;
+					if (!furth && !always20g) owner.bgmStatus.bgm = tableBGMChangeMenu[startlevel];
+					else if (always20g && !furth) owner.bgmStatus.bgm = tableBGMChangeMenu20g[startlevel];
+					else owner.bgmStatus.bgm = 15;
+					if (modetype == 4 && startlevel == 5) owner.bgmStatus.bgm = BGMStatus.BGM_ENDING2;
+					if(!always20g) nextpieces20genforced = 100;
+					if(always20g && startlevel > (20 - confignpieces) && startlevel < 20) {
+						nextpieces20genforced = 19 - startlevel;
+					}
+					else if (always20g && startlevel >= 20) { nextpieces20genforced = 0;}
+					if(always20g && startlevel >= 20) engine.ruleopt.holdEnable = false;
+					else engine.ruleopt.holdEnable = true;
+					if (confignpieces <= nextpieces20genforced || !always20g) engine.ruleopt.nextDisplay = confignpieces;
+					else engine.ruleopt.nextDisplay = nextpieces20genforced;
 					break;
 				case 3:
 					lvstopse = !lvstopse;
 					break;
 				case 4:
 					confignpieces += change;
-					if (confignpieces < 3) confignpieces = 19;
-					if (confignpieces > 19) confignpieces = 3;
-					engine.ruleopt.nextDisplay = confignpieces;
+					if(always20g && startlevel > (20 - confignpieces) && startlevel < 20) {
+						engine.ruleopt.nextDisplay = 19 - startlevel;
+						nextpieces20genforced = 19 - startlevel;
+					}
+					else if (always20g && startlevel >= 20) { engine.ruleopt.nextDisplay = 0; nextpieces20genforced = 0;}
+					if (confignpieces < 0) confignpieces = 100;
+					if (confignpieces > 100) confignpieces = 0;
+					if (confignpieces <= nextpieces20genforced || !always20g) engine.ruleopt.nextDisplay = confignpieces;
+					else engine.ruleopt.nextDisplay = nextpieces20genforced;
 					break;
 				case 5:
 					showsectiontime = !showsectiontime;
@@ -1047,6 +1097,10 @@ public class ChallengerMode extends DummyMode {
 				case 10:
 					furth = !furth;
 					if(modetype == 4) furth = false;
+					if (!furth && !always20g) owner.bgmStatus.bgm = tableBGMChangeMenu[startlevel];
+					else if (always20g && !furth) owner.bgmStatus.bgm = tableBGMChangeMenu20g[startlevel];
+					else owner.bgmStatus.bgm = 15;
+					if (modetype == 4 && startlevel == 5) owner.bgmStatus.bgm = BGMStatus.BGM_ENDING2;
 					break;
 				}
 			}
@@ -1060,6 +1114,7 @@ public class ChallengerMode extends DummyMode {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A) && (engine.statc[3] >= 5)) {
 				engine.playSE("decide");
+				owner.bgmStatus.bgm = -1;
 				saveSetting(owner.modeConfig, engine.ruleopt.strRuleName);
 				receiver.saveModeConfig(owner.modeConfig);
 
@@ -1140,6 +1195,12 @@ public class ChallengerMode extends DummyMode {
 			engine.framecolor = GameEngine.FRAME_COLOR_GRAY;
 			engine.playSE("danger");
 		}
+		if(((startlevel == 21 && modetype < 4) || (startlevel == 5 && modetype == 4)))
+		{
+			if(!started)
+			engine.playSE("endingstart"); 
+			started = true;
+		}
 
 		return false;
 	}
@@ -1173,7 +1234,7 @@ public class ChallengerMode extends DummyMode {
 				"FULL GHOST", GeneralUtil.getONorOFF(alwaysghost),
 				"20G MODE", (modetype == 4) ? "NO ACCESS" : GeneralUtil.getONorOFF(always20g),
 				"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse),
-				"NEXT PIECE", String.valueOf(confignpieces),
+				"NEXT PIECE", (confignpieces > engine.ruleopt.nextDisplay) ? (String.valueOf(engine.ruleopt.nextDisplay) + " (" + String.valueOf(confignpieces) + ")") : String.valueOf(engine.ruleopt.nextDisplay),
 				"SHOW STIME", GeneralUtil.getONorOFF(showsectiontime),
 				"BIG",  GeneralUtil.getONorOFF(big),
 				"LIVES", String.valueOf(dtetlives),
@@ -1186,7 +1247,7 @@ public class ChallengerMode extends DummyMode {
 			if (((engine.getDASDelay() > 0 && (engine.ai == null || !AIused)) || login0arrwarningtime == 0) && isShowBestSectionTime == false && owner.replayMode == false)receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr - 1, "DESCRIPTION:", 0.5f);
 			if (engine.getDASDelay() == 0 && login0arrwarningtime > 0) { receiver.drawScoreFont(engine, playerID, -15 - xfont / 2, yintr / 2, "WARNING! 0 DAS DELAY OR ARR MAY CAUSE", EventReceiver.COLOR_RED);  receiver.drawScoreFont(engine, playerID, -15 - xfont / 2, yintr / 2 + 1, "MAJOR INCONVENIENCES LATER ON!", EventReceiver.COLOR_RED);}
 			if ((engine.ai != null || AIused) && login0arrwarningtime > 0) { receiver.drawScoreFont(engine, playerID, -15 - xfont / 2, yintr / 2, "WARNING! BOT USAGE DETECTED!", EventReceiver.COLOR_RED);}
-			else if (!isShowBestSectionTime) switch(engine.statc[2]) {
+			else if (((engine.getDASDelay() > 0 && (engine.ai == null || !AIused)) || login0arrwarningtime == 0) && !isShowBestSectionTime && owner.replayMode == false) if (!receiver.isTTFSupport()) switch(engine.statc[2]) {
 			case 0:
 				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "THE STARTING LEVEL. SETTING IT TO ANYTHING OTHER THAN 0 WILL INVALIDATE", 0.5f);
 				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr + 1, "YOUR PLAY FROM THE RANKINGS. (MATTMAYUGA'S REWORD)", 0.5f);
@@ -1213,7 +1274,7 @@ public class ChallengerMode extends DummyMode {
 				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "BIG PIECES SETTING. IT'S SELF EXPLANATORY ONCE YOU PLAY WITH BIG PIECES ON.", 0.5f);
 				break;
 			case 7:
-				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "AMOUNT OF LIVES. SETTING MORE THAN 1 LIFE WILL DISABLE LEADERBOARD.", 0.5f);
+				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "AMOUNT OF LIVES. SETTING MORE THAN 1 LIFE DISABLES LEADERBOARD SAVING.", 0.5f);
 				receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr + 1, "TOPPING OUT WITH 1 LIFE COUNTS AS GAME OVER.", 0.5f);
 				break;
 			case 8:
@@ -1227,6 +1288,49 @@ public class ChallengerMode extends DummyMode {
 			case 10:
 				if (furth) receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "YOU FOUND A DIFFICULTY EASTER EGG! ALSO KNOWN AS FURTHEST.", 0.5f);
 				else receiver.drawScoreFont(engine, playerID, -30 - xfont, yintr, "WHERE'S YOUR CURSOR?", 0.5f);
+				break;
+			}
+			else switch(engine.statc[2]) {
+			case 0:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "The starting level. Setting it to anything other than 0 will invalidate");
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2 + 1, "your play from the rankings. (MattMayuga's reword)");
+				break;
+			case 1:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Ghost piece setting. When it's ON, ghost piece will stay, even on 20G.");
+				break;
+			case 2:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "20G mode. Equvalent to increasing speed level by 400. It has own separate");
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2 + 1, "leaderboard.");
+				break;
+			case 3:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Level stop sound effect will play at **99 level when it's enabled.");
+				break;
+			case 4:
+				if (confignpieces > 8)	receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "What's wrong WITH YOU!? HOW MUCH NEXT PIECES YOU SET!? " + confignpieces + " NEXT PIECES!?");
+				else receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Next pieces shown. High level 20G next piece changing feature is enforced.");
+				break;
+			case 5:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Section time setting. It will show 15 out of 21 sections. Showing all 21");
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2 + 1, "sections is a bit disturbing.");
+				break;
+			case 6:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "BIG pieces setting. It's self explanatory once you play with BIG pieces on.");
+				break;
+			case 7:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Amount of lives. Setting more than 1 life disables leaderboard saving.");
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2 + 1, "Topping out with 1 life counts as GAME OVER.");
+				break;
+			case 8:
+				int defaultTorikan = DEFAULT_TORIKAN;
+				if(engine.ruleopt.strRuleName.contains("CLASSIC")) defaultTorikan = DEFAULT_TORIKAN_CLASSIC;
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Torikan or Level 500 limit. Default torikan time is " + GeneralUtil.getTime(defaultTorikan)+ ".");
+				break;
+			case 9:
+				receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Mode type. Standard is default. Find out what other types do.");
+				break;
+			case 10:
+				if (furth) receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "You found a difficulty Easter Egg! Also known as Furthest.");
+				else receiver.drawTTFScoreFont(engine, playerID, -15 - xfont, yintr /2, "Where's YOUR CURSOR?");
 				break;
 			}
 		}
@@ -1244,6 +1348,8 @@ public class ChallengerMode extends DummyMode {
 		login0arrwarningtime = 0;
 		//if (startlevel == 21) calcScore(engine, playerID, 4);
 		if(startlevel == 21 && modetype < 4) mrollFlag = true;
+		
+		if(owner.replayMode) owner.bgmStatus.bgm = -1;
 
 		if(engine.statistics.level >= 600 && !always20g) engine.bone = true;
 		else if (engine.statistics.level >= 200 && always20g) engine.bone = true;
@@ -1340,7 +1446,7 @@ public class ChallengerMode extends DummyMode {
 					receiver.drawScoreFont(engine, playerID, -15, 23, "F:VIEW SECTION TIME", EventReceiver.COLOR_GREEN);
 				} else {
 					// Section Time
-					receiver.drawScoreFont(engine, playerID, 0, 2, "SECTION TIME", EventReceiver.COLOR_BLUE);
+					receiver.drawScoreFont(engine, playerID, 3, 2, "SECTION TIME", EventReceiver.COLOR_BLUE);
 
 					int totalTime = 0;
 					for(int i = 0; i < SECTION_MAX; i++) {
@@ -1348,11 +1454,12 @@ public class ChallengerMode extends DummyMode {
 
 						int temp = Math.min(i * 100, 2100);
 						int temp2 = Math.min(((i + 1) * 100) - 1, 2100);
+						if (i == SECTION_MAX -1) temp2 = 2100;
 
 						String strSectionTime;
 						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i][type]));
 
-						receiver.drawScoreFont(engine, playerID, 0, 3 + i, strSectionTime, (sectionIsNewRecord[i] && !isAnyExam()));
+						receiver.drawScoreFont(engine, playerID, 3, 3 + i, strSectionTime, (sectionIsNewRecord[i] && !isAnyExam()));
 
 						totalTime += bestSectionTime[i][type];
 					}
@@ -1594,9 +1701,10 @@ public class ChallengerMode extends DummyMode {
 			rollstarted = true;
 
 			if(mrollFlag) {
-				engine.blockHidden = 0;
+				if (version > 2)engine.blockHidden = 15;
+				else engine.blockHidden = 2;
 				engine.blockHiddenAnim = true;
-				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE;
+				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL;
 			} else {
 				engine.blockHidden = 300;
 				engine.blockHiddenAnim = true;
@@ -1649,9 +1757,13 @@ public class ChallengerMode extends DummyMode {
 		checkCool(engine);
 		// 速度変更
 		setSpeed(engine);
+		if(version > 2 && furth && engine.statistics.level > 1398 || (always20g && engine.statistics.level > 998))
+		{
+			engine.blockHidden = 120 - engine.statistics.level / 25;
+		}
 
-		if(engine.statistics.level < 1900) owner.backgroundStatus.bg = engine.statistics.level / 100;
-		else owner.backgroundStatus.bg = 19;
+		if(engine.statistics.level < 1900) owner.backgroundStatus.fadebg = engine.statistics.level / 100;
+		else owner.backgroundStatus.fadebg = 19;
 		// LV100到達でghost を消す
 		if((engine.statistics.level >= 100) && (!alwaysghost)) engine.ghost = false;
 
@@ -1750,8 +1862,9 @@ public class ChallengerMode extends DummyMode {
 				gradePoint = (long) (gradePoint - gradescorereq);
 				gradeDecay = 0;
 				gradeInternal++;
-				if(engine.statistics.level < 100) gradescorereq *= 1.25;
+				if(engine.statistics.level < 100 && (modetype == 0 || modetype == 2 || modetype == 4)) gradescorereq *= 1.25;
 				else if(modetype == 0 || modetype == 2 || modetype == 4) gradescorereq =  gradescorereq * Math.abs(1 + ((Math.abs(Math.floor((double)engine.statistics.level /100)+1)/4)));
+				else gradescorereq =  gradescorereq * Math.floor(1 + ((Math.floor(Math.floor((double)engine.statistics.level /100)+1)/4)));
 				if(modetype == 1 || modetype == 3)
 				{
 					if((tableGradeChangeClassic[grade] != -1) && (gradeInternal >= tableGradeChangeClassic[grade])) {
@@ -1931,12 +2044,16 @@ public class ChallengerMode extends DummyMode {
 				}
 			} else if(engine.statistics.level >= nextseclv) {
 				// Next Section
+				if ((engine.statistics.level < 2100 && modetype < 4) || (engine.statistics.level < 500 && modetype == 4))
 				engine.playSE("levelup");
 
 				// Background切り替え
-				owner.backgroundStatus.fadesw = true;
-				owner.backgroundStatus.fadecount = 0;
-				owner.backgroundStatus.fadebg = nextseclv / 100;
+				if (engine.statistics.level < 2000 && modetype < 4)
+				{
+					owner.backgroundStatus.fadesw = true;
+					owner.backgroundStatus.fadecount = 0;
+					owner.backgroundStatus.fadebg = nextseclv / 100;
+				}
 
 				// BGM切り替え
 				if((tableBGMChange[bgmlv] != -1) && (engine.statistics.level >= tableBGMChange[bgmlv]) && !always20g && !furth) {
@@ -2026,6 +2143,19 @@ public class ChallengerMode extends DummyMode {
 		// 獲得Render score
 		if(scgettime > 0) scgettime--;
 		
+		musicinitialised = true;
+		if (confignpieces <= nextpieces20genforced || !always20g) engine.ruleopt.nextDisplay = confignpieces;
+		else engine.ruleopt.nextDisplay = nextpieces20genforced;
+		
+		if(engine.stat == GameEngine.STAT_SETTING && musicinitialised && version > 2 && ((engine.getDASDelay() > 0 && (engine.ai == null || !AIused)) || login0arrwarningtime == 0))
+		{
+			if (!furth && !always20g) owner.bgmStatus.bgm = tableBGMChangeMenu[startlevel];
+			else if (always20g && !furth) owner.bgmStatus.bgm = tableBGMChangeMenu20g[startlevel];
+			else owner.bgmStatus.bgm = 15;
+			if (modetype == 4 && startlevel == 5) owner.bgmStatus.bgm = BGMStatus.BGM_ENDING2;
+		}
+		else if ((engine.getDASDelay() == 0 && (engine.ai != null || AIused)) || login0arrwarningtime > 0) owner.bgmStatus.bgm = -1;
+		
 		if(tspintime > 0) tspintime--;
 		
 		if(engine.statistics.level >= 1900) {owner.backgroundStatus.bg = 19;  owner.backgroundStatus.fadebg = 19;}
@@ -2039,6 +2169,19 @@ public class ChallengerMode extends DummyMode {
 		// 15分経過
 		if(engine.statistics.time >= 36000) {
 			setSpeed(engine);
+		}
+		if(!challengerGameOver && version > 2 && ((engine.getDASDelay() > 0 && (engine.ai == null || !AIused)) || login0arrwarningtime == 0))
+		{
+			if(engine.statistics.level == 2100 || startlevel == 21)
+			{
+				if(!furth && !always20g)
+				owner.bgmStatus.bgm = BGMStatus.BGM_ENDING1;
+				else owner.bgmStatus.bgm = BGMStatus.BGM_SPECIAL4;
+			}
+			if (always20g && startlevel > 18)
+			{
+				owner.bgmStatus.bgm = BGMStatus.BGM_SPECIAL4;
+			}
 		}
 		if (engine.statistics.level == 2100 && modetype < 4 && rolltime < ROLLTIMELIMIT && engine.ending == 2 && !challengerGameOver) engine.statistics.time++;
 		if (engine.statistics.level == 500 && modetype == 4 && rolltime < ROLLTIMELIMIT / 2.03 && engine.ending == 2 && !challengerGameOver) engine.statistics.time++;
@@ -2072,6 +2215,12 @@ public class ChallengerMode extends DummyMode {
 		// Ending
 		if((engine.gameActive) && (engine.ending == 2)) {
 			rolltime++;
+			if(mrollFlag) {
+				if (rolltime < 6400 && version > 2)engine.blockHidden = 15 - (rolltime / 400);
+				engine.blockHiddenAnim = true;
+				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE;
+			}
+			
 
 			// Time meter
 			int remainRollTime = ROLLTIMELIMIT - rolltime;
@@ -2112,11 +2261,10 @@ public class ChallengerMode extends DummyMode {
 	@Override
 	public boolean onGameOver(GameEngine engine, int playerID) {
 		// 段位M
-		if(engine.lives < 1 && initgameover) challengerGameOver = true;
-		if((mrollFlag == true) && (grade < 86) && (engine.ending == 2) && (engine.statc[0] == 0) && engine.lives < 1) {
-			if ((modetype == 1 || modetype == 3) && grade < 92) gradeincreaseamount = 92 - grade;
-			if ((modetype == 0 || modetype == 2) && grade < 18) gradeincreaseamount = 18 - grade;
-			gradeflash = 180;
+		if(engine.lives < 1 && initgameover) { challengerGameOver = true; owner.bgmStatus.bgm = -1;}
+		if((mrollFlag == true) && (grade < 92) && (engine.ending == 2) && (engine.statc[0] == 0) && engine.lives < 1) {
+			if ((modetype == 1 || modetype == 3) && grade < 92) { gradeincreaseamount = 92 - grade; gradeflash = 180;}
+			if ((modetype == 0 || modetype == 2) && grade < 18) { gradeincreaseamount = 18 - grade; gradeflash = 180;}
 			lastGradeTime = engine.statistics.time;
 		}
 
